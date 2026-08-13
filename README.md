@@ -74,19 +74,32 @@
 
 ---
 
-## 🚀 クイックスタート
+## 🚀 インストール & クイックスタート
 
-### 1. ビルド & 実行
-
-`envdoctor` は短縮バイナリ `envdr` としても提供されています。
+### 1. ワンライナーで簡単インストール (推奨)
 
 ```bash
-# リポジトリのクローン
+curl -fsSL https://raw.githubusercontent.com/sha256san/envdr/main/install.sh | sudo bash
+```
+
+### 2. APT パッケージでインストール (`sudo apt install`)
+
+```bash
+# APT リポジトリの登録
+echo "deb [trusted=yes] https://sha256san.github.io/envdr/ stable main" | sudo tee /etc/apt/sources.list.d/envdoctor.list
+sudo apt update
+
+# envdoctor (または envdr) をインストール
+sudo apt install -y envdoctor
+```
+
+### 3. ソースからビルドして実行
+
+```bash
 git clone https://github.com/sha256san/envdr.git
 cd envdr
-
-# 全体診断を実行（インストール済み言語 + システム + ツール）
-cargo run --bin envdr --
+cargo build --release
+sudo cp target/release/envdr /usr/local/bin/
 ```
 
 ---

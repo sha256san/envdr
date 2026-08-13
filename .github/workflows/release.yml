@@ -1,0 +1,54 @@
+name: Release & APT Repository
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build release packages
+        run: |
+          chmod +x scripts/package.sh scripts/create-apt-repo.sh
+          ./scripts/package.sh
+          ./scripts/create-apt-repo.sh
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            dist/*.deb
+            dist/*.tar.gz
+            dist/SHA256SUMS.txt
+          generate_release_notes: true
+
+      - name: Upload APT Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/apt
+
+  deploy-pages:
+    needs: build-and-release
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

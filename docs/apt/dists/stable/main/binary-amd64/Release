@@ -1,0 +1,11 @@
+Origin: envdoctor
+Label: envdoctor
+Suite: stable
+Codename: stable
+Architectures: amd64
+Components: main
+Description: envdoctor APT repository
+Date: Thu, 13 Aug 2026 08:05:22 +0000
+SHA256:
+ 40d2ad4550842492565c4ed819c5b087c2745b80e7d36ba8895494d4b5ddae76 1224 main/binary-amd64/Packages
+ 24977a164f0c2b2fff4ef480d94b04e5c648e20c07538388341d83ab46be5ad5 626 main/binary-amd64/Packages.gz
