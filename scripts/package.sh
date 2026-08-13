@@ -19,7 +19,7 @@ TAR_DIR="${TMP_DIR}/envdr-v${VERSION}-linux-${ARCH}"
 mkdir -p "${TAR_DIR}"
 cp target/release/envdoctor "${TAR_DIR}/"
 cp target/release/envdr "${TAR_DIR}/"
-cp README.md LICENSE SPEC.md CHANGELOG.md "${TAR_DIR}/"
+cp README.md LICENSE CHANGELOG.md "${TAR_DIR}/"
 
 echo "📦 Creating tar.gz archive..."
 tar -czvf "${DIST_DIR}/envdr-v${VERSION}-linux-${ARCH}.tar.gz" -C "${TMP_DIR}" "envdr-v${VERSION}-linux-${ARCH}"

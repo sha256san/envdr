@@ -86,7 +86,7 @@ curl -fsSL https://raw.githubusercontent.com/sha256san/envdr/main/install.sh | s
 
 ```bash
 # APT リポジトリの登録
-echo "deb [trusted=yes] https://sha256san.github.io/envdr/ stable main" | sudo tee /etc/apt/sources.list.d/envdoctor.list
+echo "deb [trusted=yes] https://raw.githubusercontent.com/sha256san/envdr/main/docs/apt stable main" | sudo tee /etc/apt/sources.list.d/envdoctor.list
 sudo apt update
 
 # envdoctor (または envdr) をインストール
@@ -206,20 +206,23 @@ envdoctor doctor --format markdown -o report.md
 
 ```text
 envdoctor/
-├── SPEC.md        # 要件・仕様定義書
-├── TODO.md        # ロードマップ & 未実装タスク一覧
-├── MEMORY.md      # AI学習記録・アーキテクチャ設計決定 (ADR)
-├── AGENTS.md      # AIエージェント開発規範・コーディング規約
-├── CHANGELOG.md   # 変更履歴
-├── Cargo.toml     # パッケージ設定
+├── CHANGELOG.md   # リリース変更履歴
+├── Cargo.toml     # パッケージ設定 & 依存関係
+├── LICENSE        # MIT ライセンス
+├── install.sh     # ワンライナー自動インストーラー
+├── scripts/       # ビルド・パッケージ作成スクリプト
+│   ├── package.sh
+│   └── create-apt-repo.sh
 └── src/
-    ├── main.rs    # CLI エントリポイント
-    ├── cli/       # コマンド定義
-    ├── core/      # 診断エンジン・共通型・AutoFixer
-    ├── system/    # OS・ハードウェア・パッケージマネージャー検出
-    ├── checkers/  # 各環境の診断ロジック
-    ├── output/    # ターミナル / JSON / Markdown 出力
-    └── utils/     # コマンド実行ラッパー・パス解決・マスキング
+    ├── lib.rs     # 診断エンジンのコアライブラリ
+    ├── main.rs    # envdoctor CLI エントリポイント
+    ├── bin/       # envdr 短縮コマンドエントリポイント
+    ├── cli/       # コマンドライン引数・フラグ定義 (clap)
+    ├── core/      # 診断エンジン・ステータス型定義・AutoFixer
+    ├── system/    # OS・ハードウェア・パッケージマネージャー自動検出
+    ├── checkers/  # 各環境の診断モジュール (多言語・ツール)
+    ├── output/    # ターミナル / JSON / Markdown 出力フォーマッター
+    └── utils/     # コマンド実行・パス解析・機密情報マスキング
 ```
 
 ---

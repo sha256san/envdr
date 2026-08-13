@@ -11,10 +11,10 @@ Description: Automated Developer Environment Diagnostic & Health Check Tool
  GPU/CUDA/ROCm environments, identifies root causes of issues, and suggests
  actionable fixes.
 Filename: pool/main/e/envdoctor/envdoctor_0.1.0_amd64.deb
-Size: 477164
-MD5sum: fdd2c27479a81e4b56eedae3cbbcc5a1
-SHA1: 6ae50c0990c77714093c98c0b2c4db882a0dcd29
-SHA256: 4283fd88ffd738f8d6ff6a0b4a1b5f12a6e1e40ebdd41c796b0a8fce24bd8e7f
+Size: 477326
+MD5sum: d43060608e88ffd76ee0189ace2623ba
+SHA1: 70112a3563a7757946cc1b2f8d5ac1e3d1e658e1
+SHA256: dd2522e35b315a4f93ecf2d1dfa3311dc773c0c54590400b35390d029186b263
 
 Package: envdr
 Version: 0.1.0
@@ -26,7 +26,7 @@ Homepage: https://github.com/sha256san/envdr
 Provides: envdoctor
 Description: Automated Developer Environment Diagnostic & Health Check Tool (envdr alias)
 Filename: pool/main/e/envdoctor/envdr_0.1.0_amd64.deb
-Size: 477164
-MD5sum: c5e7cff2b7cd76389dab8ebf431dff73
-SHA1: 8f662070c922febfa3e36a6789653dc24f1c171a
-SHA256: 34cb8fe460989d2f60437228181943ca8c94602df536befea6cf19d3d952ce71
+Size: 477324
+MD5sum: 7d3aa78af33bc775879de6cf17a3ae14
+SHA1: 27df6a2096cd6d03a21fcb3138232fd21f128acf
+SHA256: 4e3de41f67de84371c9834edf8c5ba9a85248d92f4b60763ecfc11d6f9957b26
