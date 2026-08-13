@@ -5,7 +5,7 @@ Codename: stable
 Architectures: amd64
 Components: main
 Description: envdoctor APT repository
-Date: Thu, 13 Aug 2026 08:19:52 +0000
+Date: Thu, 13 Aug 2026 08:48:23 +0000
 SHA256:
- 6957d14dd407f62ea81aa771d89c73012666370a1d2ec3418cc0e50c0fd5f7e7 1224 main/binary-amd64/Packages
- 839a0e2d7226b25b28c1f1080f300ba643154a96b65a800a1438437b94033797 631 main/binary-amd64/Packages.gz
+ 7cffedce0edcd38faf8abe7f139a6b4ffa264e4457b4908a62464b223fd96180 1224 main/binary-amd64/Packages
+ d579501caac299fe428fb200e980376b41b54f47f58499820e5ffda4282a5852 626 main/binary-amd64/Packages.gz

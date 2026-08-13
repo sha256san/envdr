@@ -181,7 +181,7 @@ envdr fix --apply
      Warning: Git user.name is not set globally
      Warning: Git user.email is not set globally
      💡 Recommendation: Set Git global identity
-        $ git config --global user.name "Your Name" && git config --global user.email "you@example.com"
+        $ git config --global user.name "sha256" && git config --global user.email "sha256san@gmail.com"
 ```
 
 ### JSON 出力 (`--format json`)
