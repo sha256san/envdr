@@ -26,6 +26,7 @@ jobs:
             arch: x86_64
             deb_arch: amd64
             is_deb: true
+            use_cross: false
 
           - name: Linux ARM64
             os: ubuntu-latest
@@ -41,14 +42,18 @@ jobs:
             target: aarch64-apple-darwin
             pkg_os: darwin
             arch: arm64
+            deb_arch: unknown
             is_deb: false
+            use_cross: false
 
           - name: macOS Intel (x86_64)
-            os: macos-13
+            os: macos-latest
             target: x86_64-apple-darwin
             pkg_os: darwin
             arch: x86_64
+            deb_arch: unknown
             is_deb: false
+            use_cross: false
 
     steps:
       - name: Checkout repository
@@ -67,7 +72,7 @@ jobs:
 
       - name: Build binary
         run: |
-          if [ "${{ matrix.target }}" = "aarch64-unknown-linux-gnu" ]; then
+          if [ "${{ matrix.use_cross }}" = "true" ]; then
             RUSTFLAGS="-C linker=aarch64-linux-gnu-gcc" cargo build --release --target ${{ matrix.target }}
           else
             cargo build --release --target ${{ matrix.target }}
@@ -75,7 +80,11 @@ jobs:
 
       - name: Package artifacts
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
+          if [[ "${GITHUB_REF_NAME}" =~ ^v[0-9] ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            VERSION=$(grep -m 1 '^version = ' Cargo.toml | cut -d '"' -f 2)
+          fi
           DIST_DIR="dist_output"
           TMP_DIR="target/pkg_tmp"
           mkdir -p "${DIST_DIR}" "${TMP_DIR}"
@@ -92,7 +101,7 @@ jobs:
           tar -czvf "${DIST_DIR}/${PKG_NAME}.tar.gz" -C "${TMP_DIR}" "${PKG_NAME}"
           cp "${DIST_DIR}/${PKG_NAME}.tar.gz" "${DIST_DIR}/envdoctor-v${VERSION}-${{ matrix.pkg_os }}-${{ matrix.arch }}.tar.gz"
 
-          # Debian Package (.deb)
+          # Debian Package (.deb) (Linux only)
           if [ "${{ matrix.is_deb }}" = "true" ]; then
             DEB_DOC_DIR="${TMP_DIR}/deb_envdoctor"
             mkdir -p "${DEB_DOC_DIR}/DEBIAN" "${DEB_DOC_DIR}/usr/bin" "${DEB_DOC_DIR}/usr/share/doc/envdoctor"
@@ -165,7 +174,7 @@ EOF
           cp all_dist/*.tar.gz docs/dist/ 2>/dev/null || true
 
           cd dist
-          sha256sum * > SHA256SUMS.txt
+          sha256sum $(find . -maxdepth 1 -type f ! -name "SHA256SUMS.txt") > SHA256SUMS.txt
           cd ..
 
           # Generate APT Repo
@@ -176,6 +185,7 @@ EOF
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           files: |
             dist/*
           generate_release_notes: true

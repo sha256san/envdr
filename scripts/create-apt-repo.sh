@@ -21,7 +21,7 @@ cp "dist/envdr_${VERSION}_amd64.deb" "${REPO_DIR}/pool/main/e/envdoctor/"
 cd "${REPO_DIR}"
 
 PKG_FILE="pool/main/e/envdoctor/envdoctor_${VERSION}_amd64.deb"
-SIZE=$(stat -c%s "${PKG_FILE}")
+SIZE=$(wc -c < "${PKG_FILE}" | tr -d ' ')
 SHA256=$(sha256sum "${PKG_FILE}" | awk '{print $1}')
 MD5=$(md5sum "${PKG_FILE}" | awk '{print $1}')
 SHA1=$(sha1sum "${PKG_FILE}" | awk '{print $1}')
@@ -56,7 +56,7 @@ Homepage: https://github.com/sha256san/envdr
 Provides: envdoctor
 Description: Automated Developer Environment Diagnostic & Health Check Tool (envdr alias)
 Filename: pool/main/e/envdoctor/envdr_${VERSION}_amd64.deb
-Size: $(stat -c%s "pool/main/e/envdoctor/envdr_${VERSION}_amd64.deb")
+Size: $(wc -c < "pool/main/e/envdoctor/envdr_${VERSION}_amd64.deb" | tr -d ' ')
 MD5sum: $(md5sum "pool/main/e/envdoctor/envdr_${VERSION}_amd64.deb" | awk '{print $1}')
 SHA1: $(sha1sum "pool/main/e/envdoctor/envdr_${VERSION}_amd64.deb" | awk '{print $1}')
 SHA256: $(sha256sum "pool/main/e/envdoctor/envdr_${VERSION}_amd64.deb" | awk '{print $1}')
@@ -64,9 +64,9 @@ EOF
 
 gzip -9c dists/stable/main/binary-amd64/Packages > dists/stable/main/binary-amd64/Packages.gz
 
-PKG_GZ_SIZE=$(stat -c%s dists/stable/main/binary-amd64/Packages.gz)
+PKG_GZ_SIZE=$(wc -c < dists/stable/main/binary-amd64/Packages.gz | tr -d ' ')
 PKG_GZ_SHA256=$(sha256sum dists/stable/main/binary-amd64/Packages.gz | awk '{print $1}')
-PKG_RAW_SIZE=$(stat -c%s dists/stable/main/binary-amd64/Packages)
+PKG_RAW_SIZE=$(wc -c < dists/stable/main/binary-amd64/Packages | tr -d ' ')
 PKG_RAW_SHA256=$(sha256sum dists/stable/main/binary-amd64/Packages | awk '{print $1}')
 
 cat <<EOF > dists/stable/Release
