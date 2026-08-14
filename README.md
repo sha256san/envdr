@@ -345,7 +345,7 @@ For bug reports, feature requests, or suggestions for new language/tool checkers
 
 - **Issue Tracker / Feature Requests**: [GitHub Issues](https://github.com/sha256san/envdr/issues)
 - **Discussions & Ideas**: [GitHub Discussions](https://github.com/sha256san/envdr/discussions)
-- **Email Contact**: [contact@example.com](mailto:sha256san@gmail.com)
+- **Email Contact**: [sha256san@gmail.com](mailto:sha256san@gmail.com)
 - **Repository**: [https://github.com/sha256san/envdr](https://github.com/sha256san/envdr)
 
 ---
@@ -696,7 +696,7 @@ Dockerコンテナ内でのテスト実行：
 
 - **Issue / バグ報告・機能リクエスト**: [GitHub Issues](https://github.com/sha256san/envdr/issues)
 - **ディスカッション・アイデア共有**: [GitHub Discussions](https://github.com/sha256san/envdr/discussions)
-- **メール連絡先**: [contact@example.com](mailto:sha256san@gmail.com)
+- **メール連絡先**: [sha256san@gmail.com](mailto:sha256san@gmail.com)
 - **リポジトリ**: [https://github.com/sha256san/envdr](https://github.com/sha256san/envdr)
 
 ---
