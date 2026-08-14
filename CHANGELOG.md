@@ -5,6 +5,15 @@
 
 ---
 
+## [0.3.2] - 2026-08-14
+
+### Added
+- **Apple Silicon (ARM64) & Linux ARM64 ネイティブバイナリの CI 自動ビルド・リリース**:
+  - GitHub Actions によるマルチプラットフォーム自動ビルドマトリックス (`macOS arm64`, `macOS x86_64`, `Linux arm64`, `Linux x86_64`) を導入。
+  - Rust / Cargo がインストールされていない ARM 環境でも、事前ビルド済みバイナリ（`envdr-v0.3.2-darwin-arm64.tar.gz` / `envdr-v0.3.2-linux-aarch64.tar.gz`）によりワンライナーで即時インストールが可能に。
+
+---
+
 ## [0.3.1] - 2026-08-14
 
 ### Fixed

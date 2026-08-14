@@ -3,7 +3,7 @@
 set -euo pipefail
 
 REPO="sha256san/envdr"
-VERSION="0.3.1"
+VERSION="0.3.2"
 
 echo "🩺  envdoctor  -  Developer Environment Diagnostic Tool Installer"
 echo "────────────────────────────────────────────────────────────"
