@@ -3,11 +3,18 @@
 set -euo pipefail
 
 REPO="sha256san/envdr"
-VERSION="0.2.0"
+VERSION="0.3.0"
 INSTALL_DIR="/usr/local/bin"
 
 echo "🩺  envdoctor  -  Developer Environment Diagnostic Tool Installer"
 echo "────────────────────────────────────────────────────────────"
+
+# root 実行判定 (root 権限時は sudo を付与しない)
+if [ "$(id -u)" -eq 0 ]; then
+    SUDO=""
+else
+    SUDO="sudo"
+fi
 
 RAW_ARCH=$(uname -m)
 RAW_OS=$(uname -s | tr '[:upper:]' '[:lower:]')
@@ -46,7 +53,16 @@ esac
 
 echo "ℹ️  Detected System: OS=${OS}, Arch=${ARCH}"
 
-# 3. macOS (Apple Silicon / Intel) のインストール処理
+# 3. 既存インストールのクリーンアップ (Cleanup previous envdr/envdoctor before reinstalling)
+echo "🧹 Removing previous envdoctor/envdr installation if present..."
+if [ "$OS" = "linux" ] && command -v dpkg >/dev/null 2>&1; then
+    if dpkg -s envdoctor >/dev/null 2>&1 || dpkg -s envdr >/dev/null 2>&1; then
+        ${SUDO} dpkg -P envdoctor envdr 2>/dev/null || ${SUDO} dpkg -r envdoctor envdr 2>/dev/null || true
+    fi
+fi
+${SUDO} rm -f "${INSTALL_DIR}/envdoctor" "${INSTALL_DIR}/envdr" "/usr/bin/envdoctor" "/usr/bin/envdr" "${HOME}/.local/bin/envdoctor" "${HOME}/.local/bin/envdr" 2>/dev/null || true
+
+# 4. macOS (Apple Silicon / Intel) のインストール処理
 if [ "$OS" = "darwin" ]; then
     if [ "$DARWIN_ARCH" = "arm64" ]; then
         echo "🍎 Apple Silicon (M1/M2/M3/M4) detected."
@@ -54,7 +70,7 @@ if [ "$OS" = "darwin" ]; then
         echo "🍎 Intel Mac detected."
     fi
 
-    # Homebrew が利用可能な場合は Homebrew でのインストールを推奨・実行可能
+    # Homebrew が利用可能な場合は Homebrew でのインストール案内
     if command -v brew >/dev/null 2>&1; then
         echo "🍺 Homebrew detected! You can also install via: brew install sha256san/tap/envdoctor"
     fi
@@ -62,15 +78,15 @@ if [ "$OS" = "darwin" ]; then
     TMP_TAR=$(mktemp /tmp/envdr_XXXXXX.tar.gz)
     TAR_URL="https://github.com/${REPO}/releases/download/v${VERSION}/envdr-v${VERSION}-darwin-${DARWIN_ARCH}.tar.gz"
 
-    echo "📥 Downloading macOS release package..."
+    echo "📥 Downloading macOS release package (v${VERSION})..."
     if curl -fsSL -o "${TMP_TAR}" "${TAR_URL}" 2>/dev/null; then
         TMP_EXTRACT=$(mktemp -d /tmp/envdr_extract_XXXXXX)
         tar -xzf "${TMP_TAR}" -C "${TMP_EXTRACT}"
 
         echo "📦 Copying binaries to ${INSTALL_DIR}..."
-        sudo cp "${TMP_EXTRACT}"/*/envdoctor "${INSTALL_DIR}/"
-        sudo cp "${TMP_EXTRACT}"/*/envdr "${INSTALL_DIR}/"
-        sudo chmod 755 "${INSTALL_DIR}/envdoctor" "${INSTALL_DIR}/envdr"
+        ${SUDO} cp "${TMP_EXTRACT}"/*/envdoctor "${INSTALL_DIR}/"
+        ${SUDO} cp "${TMP_EXTRACT}"/*/envdr "${INSTALL_DIR}/"
+        ${SUDO} chmod 755 "${INSTALL_DIR}/envdoctor" "${INSTALL_DIR}/envdr"
         rm -rf "${TMP_TAR}" "${TMP_EXTRACT}"
 
         echo "✨ Installation complete! You can now run 'envdr' or 'envdoctor'."
@@ -79,15 +95,15 @@ if [ "$OS" = "darwin" ]; then
     fi
 fi
 
-# 4. Linux (x86_64 / ARM64) の Debian パッケージインストール
+# 5. Linux (x86_64 / ARM64) の Debian パッケージインストール
 if [ "$OS" = "linux" ] && command -v dpkg >/dev/null 2>&1; then
     TMP_DEB=$(mktemp /tmp/envdoctor_XXXXXX.deb)
     DEB_URL="https://github.com/${REPO}/releases/download/v${VERSION}/envdoctor_${VERSION}_${DEB_ARCH}.deb"
     
-    echo "📥 Downloading Debian (.deb) package for ${DEB_ARCH}..."
+    echo "📥 Downloading Debian (.deb) package for ${DEB_ARCH} (v${VERSION})..."
     if curl -fsSL -o "${TMP_DEB}" "${DEB_URL}" 2>/dev/null; then
         echo "📦 Installing via dpkg..."
-        sudo dpkg -i "${TMP_DEB}" || sudo apt-get install -f -y
+        ${SUDO} dpkg -i "${TMP_DEB}" || ${SUDO} apt-get install -f -y
         rm -f "${TMP_DEB}"
         echo "✨ Installation complete! You can now run 'envdr' or 'envdoctor'."
         envdr --version || true
@@ -95,20 +111,20 @@ if [ "$OS" = "linux" ] && command -v dpkg >/dev/null 2>&1; then
     fi
 fi
 
-# 5. Linux スタンドアロンバイナリ (tar.gz) インストール
+# 6. Linux スタンドアロンバイナリ (tar.gz) インストール
 if [ "$OS" = "linux" ]; then
     TMP_TAR=$(mktemp /tmp/envdr_XXXXXX.tar.gz)
     TAR_URL="https://github.com/${REPO}/releases/download/v${VERSION}/envdr-v${VERSION}-linux-${ARCH}.tar.gz"
 
-    echo "📥 Downloading binary package for Linux ${ARCH}..."
+    echo "📥 Downloading binary package for Linux ${ARCH} (v${VERSION})..."
     if curl -fsSL -o "${TMP_TAR}" "${TAR_URL}" 2>/dev/null; then
         TMP_EXTRACT=$(mktemp -d /tmp/envdr_extract_XXXXXX)
         tar -xzf "${TMP_TAR}" -C "${TMP_EXTRACT}"
 
         echo "📦 Copying binaries to ${INSTALL_DIR}..."
-        sudo cp "${TMP_EXTRACT}"/*/envdoctor "${INSTALL_DIR}/"
-        sudo cp "${TMP_EXTRACT}"/*/envdr "${INSTALL_DIR}/"
-        sudo chmod 755 "${INSTALL_DIR}/envdoctor" "${INSTALL_DIR}/envdr"
+        ${SUDO} cp "${TMP_EXTRACT}"/*/envdoctor "${INSTALL_DIR}/"
+        ${SUDO} cp "${TMP_EXTRACT}"/*/envdr "${INSTALL_DIR}/"
+        ${SUDO} chmod 755 "${INSTALL_DIR}/envdoctor" "${INSTALL_DIR}/envdr"
         rm -rf "${TMP_TAR}" "${TMP_EXTRACT}"
 
         echo "✨ Installation complete! You can now run 'envdr' or 'envdoctor'."

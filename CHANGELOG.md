@@ -5,7 +5,7 @@
 
 ---
 
-## [Unreleased]
+## [0.3.0] - 2026-08-14
 
 ### Added
 - **診断結果のUX構造改革 (Problem-Cause-Impact-Fix-Verify パイプライン)**:
@@ -16,8 +16,18 @@
   - 診断レポート末尾に検出された全問題を重要度タグ（`[CRITICAL]`, `[ERROR]`, `[WARN]`, `[INFO]`）付きで番号一覧表示
   - 問題ごとの影響（Impact）および修正コマンド（Fix）のサマリー抜粋表示
   - `envdr fix` による自動修復への誘導アクションフッターの追加
-- **各診断チェッカーの改善**:
-  - `SystemChecker`: 箇条書きによる無効 PATH 一覧およびコマンド実行失敗への影響説明
+- **自動修復 & 安全実行機構 (AutoFixer)**:
+  - トップレベルフラグ `--fix`, `--dry-run`, `--apply` のサポート (`envdr --fix`)
+  - 修復適用前の設定ファイル自動バックアップ (`~/.bashrc.envdr.bak`)
+  - 修復適用後の自動再診断 (Post-fix re-scan)
+- **インストーラーのクリーンアップ機構 (`install.sh`)**:
+  - 再インストール・アップデート時に既存の `envdr`/`envdoctor` パッケージ・バイナリを事前に自動削除・クリーンアップ
+- **CI/CD モード & 終了コード標準化**:
+  - `--ci` フラグの追加（Warning / Error 検出時に非ゼロ終了）
+  - 終了コードの体系化 (`0`: OK, `1`: Warning, `2`: Error, `3`: Critical)
+- **各診断チェッカーの刷新**:
+  - `SystemChecker`: WSL2 自動検出 & Windows マウント PATH 分離、箇条書きによる無効 PATH 一覧
+  - `RustChecker`: `rustc` / `cargo` バージョン一致性、`~/.cargo/bin` PATH 設定検査
   - `PythonChecker`: Python と pip の実行環境不一致を厳密検知し、`python -m pip` の修正コマンドと影響を提示
   - `GoChecker`: `$GOPATH/bin` 未設定時の影響と PATH 追加コマンドの提示
   - `DockerChecker`: ソケット権限不足・デーモン停止時の影響とグループ追加コマンド・検証コマンドの提示
