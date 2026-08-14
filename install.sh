@@ -77,9 +77,10 @@ if [ "$OS" = "darwin" ]; then
 
     TMP_TAR=$(mktemp /tmp/envdr_XXXXXX.tar.gz)
     TAR_URL="https://github.com/${REPO}/releases/download/v${VERSION}/envdr-v${VERSION}-darwin-${DARWIN_ARCH}.tar.gz"
+    TAR_FALLBACK="https://raw.githubusercontent.com/${REPO}/main/docs/dist/envdr-v${VERSION}-darwin-${DARWIN_ARCH}.tar.gz"
 
     echo "📥 Downloading macOS release package (v${VERSION})..."
-    if curl -fsSL -o "${TMP_TAR}" "${TAR_URL}" 2>/dev/null; then
+    if curl -fsSL -o "${TMP_TAR}" "${TAR_URL}" 2>/dev/null || curl -fsSL -o "${TMP_TAR}" "${TAR_FALLBACK}" 2>/dev/null; then
         TMP_EXTRACT=$(mktemp -d /tmp/envdr_extract_XXXXXX)
         tar -xzf "${TMP_TAR}" -C "${TMP_EXTRACT}"
 
@@ -90,6 +91,7 @@ if [ "$OS" = "darwin" ]; then
         rm -rf "${TMP_TAR}" "${TMP_EXTRACT}"
 
         echo "✨ Installation complete! You can now run 'envdr' or 'envdoctor'."
+        hash -r 2>/dev/null || true
         envdr --version || true
         exit 0
     fi
@@ -99,13 +101,15 @@ fi
 if [ "$OS" = "linux" ] && command -v dpkg >/dev/null 2>&1; then
     TMP_DEB=$(mktemp /tmp/envdoctor_XXXXXX.deb)
     DEB_URL="https://github.com/${REPO}/releases/download/v${VERSION}/envdoctor_${VERSION}_${DEB_ARCH}.deb"
+    DEB_FALLBACK="https://raw.githubusercontent.com/${REPO}/main/docs/apt/pool/main/e/envdoctor/envdoctor_${VERSION}_${DEB_ARCH}.deb"
     
     echo "📥 Downloading Debian (.deb) package for ${DEB_ARCH} (v${VERSION})..."
-    if curl -fsSL -o "${TMP_DEB}" "${DEB_URL}" 2>/dev/null; then
+    if curl -fsSL -o "${TMP_DEB}" "${DEB_URL}" 2>/dev/null || curl -fsSL -o "${TMP_DEB}" "${DEB_FALLBACK}" 2>/dev/null; then
         echo "📦 Installing via dpkg..."
         ${SUDO} dpkg -i "${TMP_DEB}" || ${SUDO} apt-get install -f -y
         rm -f "${TMP_DEB}"
         echo "✨ Installation complete! You can now run 'envdr' or 'envdoctor'."
+        hash -r 2>/dev/null || true
         envdr --version || true
         exit 0
     fi
@@ -115,9 +119,10 @@ fi
 if [ "$OS" = "linux" ]; then
     TMP_TAR=$(mktemp /tmp/envdr_XXXXXX.tar.gz)
     TAR_URL="https://github.com/${REPO}/releases/download/v${VERSION}/envdr-v${VERSION}-linux-${ARCH}.tar.gz"
+    TAR_FALLBACK="https://raw.githubusercontent.com/${REPO}/main/docs/dist/envdr-v${VERSION}-linux-${ARCH}.tar.gz"
 
     echo "📥 Downloading binary package for Linux ${ARCH} (v${VERSION})..."
-    if curl -fsSL -o "${TMP_TAR}" "${TAR_URL}" 2>/dev/null; then
+    if curl -fsSL -o "${TMP_TAR}" "${TAR_URL}" 2>/dev/null || curl -fsSL -o "${TMP_TAR}" "${TAR_FALLBACK}" 2>/dev/null; then
         TMP_EXTRACT=$(mktemp -d /tmp/envdr_extract_XXXXXX)
         tar -xzf "${TMP_TAR}" -C "${TMP_EXTRACT}"
 
@@ -128,6 +133,7 @@ if [ "$OS" = "linux" ]; then
         rm -rf "${TMP_TAR}" "${TMP_EXTRACT}"
 
         echo "✨ Installation complete! You can now run 'envdr' or 'envdoctor'."
+        hash -r 2>/dev/null || true
         envdr --version || true
         exit 0
     fi
