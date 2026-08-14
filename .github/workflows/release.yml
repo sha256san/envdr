@@ -1,4 +1,4 @@
-name: Release & APT Repository
+name: Multi-Platform Release & APT Repository
 
 on:
   push:
@@ -12,29 +12,172 @@ permissions:
   id-token: write
 
 jobs:
-  build-and-release:
-    runs-on: ubuntu-latest
+  build-matrix:
+    name: Build (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux x86_64
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            pkg_os: linux
+            arch: x86_64
+            deb_arch: amd64
+            is_deb: true
+
+          - name: Linux ARM64
+            os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            pkg_os: linux
+            arch: aarch64
+            deb_arch: arm64
+            is_deb: true
+            use_cross: true
+
+          - name: macOS Apple Silicon (arm64)
+            os: macos-latest
+            target: aarch64-apple-darwin
+            pkg_os: darwin
+            arch: arm64
+            is_deb: false
+
+          - name: macOS Intel (x86_64)
+            os: macos-13
+            target: x86_64-apple-darwin
+            pkg_os: darwin
+            arch: x86_64
+            is_deb: false
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
 
-      - name: Build release packages
+      - name: Install cross-compilation tools (Linux ARM64)
+        if: matrix.use_cross
         run: |
-          chmod +x scripts/package.sh scripts/create-apt-repo.sh
-          ./scripts/package.sh
-          ./scripts/create-apt-repo.sh
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
 
-      - name: Create GitHub Release
+      - name: Build binary
+        run: |
+          if [ "${{ matrix.target }}" = "aarch64-unknown-linux-gnu" ]; then
+            RUSTFLAGS="-C linker=aarch64-linux-gnu-gcc" cargo build --release --target ${{ matrix.target }}
+          else
+            cargo build --release --target ${{ matrix.target }}
+          fi
+
+      - name: Package artifacts
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          DIST_DIR="dist_output"
+          TMP_DIR="target/pkg_tmp"
+          mkdir -p "${DIST_DIR}" "${TMP_DIR}"
+
+          BIN_DIR="target/${{ matrix.target }}/release"
+          PKG_NAME="envdr-v${VERSION}-${{ matrix.pkg_os }}-${{ matrix.arch }}"
+          TAR_DIR="${TMP_DIR}/${PKG_NAME}"
+          mkdir -p "${TAR_DIR}"
+
+          cp "${BIN_DIR}/envdoctor" "${TAR_DIR}/"
+          cp "${BIN_DIR}/envdr" "${TAR_DIR}/"
+          cp README.md LICENSE CHANGELOG.md "${TAR_DIR}/"
+
+          tar -czvf "${DIST_DIR}/${PKG_NAME}.tar.gz" -C "${TMP_DIR}" "${PKG_NAME}"
+          cp "${DIST_DIR}/${PKG_NAME}.tar.gz" "${DIST_DIR}/envdoctor-v${VERSION}-${{ matrix.pkg_os }}-${{ matrix.arch }}.tar.gz"
+
+          # Debian Package (.deb)
+          if [ "${{ matrix.is_deb }}" = "true" ]; then
+            DEB_DOC_DIR="${TMP_DIR}/deb_envdoctor"
+            mkdir -p "${DEB_DOC_DIR}/DEBIAN" "${DEB_DOC_DIR}/usr/bin" "${DEB_DOC_DIR}/usr/share/doc/envdoctor"
+
+            cat <<EOF > "${DEB_DOC_DIR}/DEBIAN/control"
+Package: envdoctor
+Version: ${VERSION}
+Section: devel
+Priority: optional
+Architecture: ${{ matrix.deb_arch }}
+Provides: envdr
+Replaces: envdr
+Maintainer: envdoctor team <sha256san@users.noreply.github.com>
+Homepage: https://github.com/sha256san/envdr
+Description: Automated Developer Environment Diagnostic & Health Check Tool
+ envdoctor (envdr) diagnoses Python, Rust, Go, Node.js, C/C++, Docker, Git,
+ GPU/CUDA/ROCm environments, identifies root causes of issues, and suggests
+ actionable fixes.
+EOF
+
+            cp "${BIN_DIR}/envdoctor" "${DEB_DOC_DIR}/usr/bin/"
+            cp "${BIN_DIR}/envdr" "${DEB_DOC_DIR}/usr/bin/"
+            cp README.md LICENSE "${DEB_DOC_DIR}/usr/share/doc/envdoctor/"
+            dpkg-deb --build "${DEB_DOC_DIR}" "${DIST_DIR}/envdoctor_${VERSION}_${{ matrix.deb_arch }}.deb"
+
+            # Create alias package envdr
+            DEB_DR_DIR="${TMP_DIR}/deb_envdr"
+            mkdir -p "${DEB_DR_DIR}/DEBIAN" "${DEB_DR_DIR}/usr/bin"
+            cat <<EOF > "${DEB_DR_DIR}/DEBIAN/control"
+Package: envdr
+Version: ${VERSION}
+Section: devel
+Priority: optional
+Architecture: ${{ matrix.deb_arch }}
+Provides: envdoctor
+Replaces: envdoctor
+Maintainer: envdoctor team <sha256san@users.noreply.github.com>
+Homepage: https://github.com/sha256san/envdr
+Description: Automated Developer Environment Diagnostic & Health Check Tool (envdr alias)
+EOF
+            cp "${BIN_DIR}/envdr" "${DEB_DR_DIR}/usr/bin/"
+            cp "${BIN_DIR}/envdoctor" "${DEB_DR_DIR}/usr/bin/"
+            dpkg-deb --build "${DEB_DR_DIR}" "${DIST_DIR}/envdr_${VERSION}_${{ matrix.deb_arch }}.deb"
+          fi
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.pkg_os }}-${{ matrix.arch }}
+          path: dist_output/*
+
+  release:
+    name: Create Multi-Platform GitHub Release
+    needs: build-matrix
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: all_dist
+          merge-multiple: true
+
+      - name: Organize release files and compute checksums
+        run: |
+          mkdir -p dist docs/dist
+          cp all_dist/* dist/ 2>/dev/null || true
+          cp all_dist/*.tar.gz docs/dist/ 2>/dev/null || true
+
+          cd dist
+          sha256sum * > SHA256SUMS.txt
+          cd ..
+
+          # Generate APT Repo
+          chmod +x scripts/create-apt-repo.sh
+          ./scripts/create-apt-repo.sh || true
+
+      - name: Create GitHub Release with all Platform Binaries
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            dist/*.deb
-            dist/*.tar.gz
-            dist/SHA256SUMS.txt
+            dist/*
           generate_release_notes: true
 
       - name: Upload APT Pages Artifact
@@ -43,7 +186,7 @@ jobs:
           path: docs/apt
 
   deploy-pages:
-    needs: build-and-release
+    needs: release
     runs-on: ubuntu-latest
     environment:
       name: github-pages

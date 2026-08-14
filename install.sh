@@ -161,11 +161,17 @@ if command -v cargo >/dev/null 2>&1; then
     exit 0
 fi
 
-# 8. 自動フォールバック: Homebrew による自動ビルド & インストール
-if command -v brew >/dev/null 2>&1; then
+# 8. 自動フォールバック: Homebrew による自動インストール (root権限を避けて実行)
+if [ -n "${SUDO_USER:-}" ] && [ "${SUDO_USER}" != "root" ]; then
+    BREW_RUN="sudo -u ${SUDO_USER} brew"
+else
+    BREW_RUN="brew"
+fi
+
+if ${BREW_RUN} --version >/dev/null 2>&1; then
     echo "🍺 Homebrew detected! Installing via Homebrew..."
-    brew install --build-from-source "https://raw.githubusercontent.com/${REPO}/main/Formula/envdoctor.rb" 2>/dev/null || true
-    if command -v envdr >/dev/null 2>&1 || command -v envdoctor >/dev/null 2>&1; then
+    ${BREW_RUN} install --build-from-source "https://raw.githubusercontent.com/${REPO}/main/Formula/envdoctor.rb" 2>/dev/null || true
+    if command -v envdr >/dev/null 2>&1 || command -v envdoctor >/dev/null 2>&1 || [ -f "/opt/homebrew/bin/envdr" ] || [ -f "/usr/local/bin/envdr" ]; then
         echo "✨ Installation complete via Homebrew! You can now run 'envdr' or 'envdoctor'."
         hash -r 2>/dev/null || true
         envdr --version || true

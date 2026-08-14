@@ -25,3 +25,292 @@ mktemp: mkstemp failed on /tmp/envdr_XXXXXX.tar.gz: File exists
 (base)
  󰉋 ~  node v26.5.0 py v3.13.13 took 1s
 ❯
+
+
+Last login: Fri Aug 14 22:19:03 on ttys013
+(base)
+ 󰉋 ~/ envdr      main 
+❯ curl -fsSL https://raw.githubusercontent.com/sha256san/envdr/main/install.sh | sudo bash
+Password:
+sudo: a password is required
+(base)
+ 󰉋 ~/ envdr      main   took 4s
+❯
+(base)
+ 󰉋 ~/ envdr      main 
+❯ cd
+(base)
+ 󰉋 ~  node v26.5.0 py v3.13.13
+❯ curl -fsSL https://raw.githubusercontent.com/sha256san/envdr/main/install.sh | sudo bash
+Password:
+🩺  envdoctor  -  Developer Environment Diagnostic Tool Installer
+────────────────────────────────────────────────────────────
+ℹ️  Detected System: OS=darwin, Arch=aarch64
+🧹 Removing previous envdoctor/envdr installation if present...
+🍎 Apple Silicon (M1/M2/M3/M4) detected.
+mktemp: mkstemp failed on /tmp/envdr_XXXXXX.tar.gz: File exists
+(base)
+ 󰉋 ~  node v26.5.0 py v3.13.13 took 1s
+❯ curl -fsSL https://raw.githubusercontent.com/sha256san/envdr/main/install.sh | sudo bash
+Password:
+🩺  envdoctor  -  Developer Environment Diagnostic Tool Installer
+────────────────────────────────────────────────────────────
+ℹ️  Detected System: OS=darwin, Arch=aarch64
+🧹 Removing previous envdoctor/envdr installation if present...
+🍎 Apple Silicon (M1/M2/M3/M4) detected.
+📥 Downloading macOS release package (v0.3.1)...
+🍺 Homebrew detected! Installing via Homebrew...
+❌ Failed to download pre-compiled release from GitHub and build tools were not found.
+💡 To install Rust & build with Cargo, run:
+   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+   cargo install --git https://github.com/sha256san/envdr
+(base)
+ 󰉋 ~  node v26.5.0 py v3.13.13 took 4s
+❯ curl -fsSL https://raw.githubusercontent.com/sha256san/envdr/main/install.sh | sudo bash
+🩺  envdoctor  -  Developer Environment Diagnostic Tool Installer
+────────────────────────────────────────────────────────────
+ℹ️  Detected System: OS=darwin, Arch=aarch64
+🧹 Removing previous envdoctor/envdr installation if present...
+🍎 Apple Silicon (M1/M2/M3/M4) detected.
+📥 Downloading macOS release package (v0.3.1)...
+⚙️  Pre-compiled package not found. Building directly from source with Cargo...
+    Updating git repository `https://github.com/sha256san/envdr`
+  Installing envdoctor v0.3.1 (https://github.com/sha256san/envdr#ef7ab507)
+    Updating crates.io index
+     Locking 93 packages to latest compatible versions
+      Adding colored v2.2.0 (available: v3.1.1)
+      Adding sysinfo v0.30.13 (available: v0.39.6)
+      Adding which v6.0.3 (available: v8.0.5)
+  Downloaded anstyle-query v1.1.5
+  Downloaded colorchoice v1.0.5
+  Downloaded home v0.5.12
+  Downloaded strsim v0.11.1
+  Downloaded errno v0.3.14
+  Downloaded cfg-if v1.0.4
+  Downloaded clap_lex v1.1.0
+  Downloaded is_terminal_polyfill v1.70.2
+  Downloaded itoa v1.0.18
+  Downloaded heck v0.5.0
+  Downloaded lazy_static v1.5.0
+  Downloaded utf8parse v0.2.2
+  Downloaded anstream v1.0.0
+  Downloaded clap_derive v4.6.4
+  Downloaded anstyle-parse v1.0.0
+  Downloaded anstyle v1.0.14
+  Downloaded either v1.17.0
+  Downloaded which v6.0.3
+  Downloaded zmij v1.0.23
+  Downloaded autocfg v1.5.1
+  Downloaded quote v1.0.47
+  Downloaded crossbeam-deque v0.8.7
+  Downloaded crossbeam-utils v0.8.22
+  Downloaded colored v2.2.0
+  Downloaded iana-time-zone v0.1.65
+  Downloaded crossbeam-epoch v0.9.20
+  Downloaded clap v4.6.6
+  Downloaded unicode-ident v1.0.24
+  Downloaded num-traits v0.2.19
+  Downloaded core-foundation-sys v0.8.7
+  Downloaded serde_derive v1.0.229
+  Downloaded proc-macro2 v1.0.107
+  Downloaded serde_core v1.0.229
+  Downloaded bitflags v2.13.1
+  Downloaded rayon-core v1.13.0
+  Downloaded anyhow v1.0.104
+  Downloaded serde v1.0.229
+  Downloaded memchr v2.8.3
+  Downloaded serde_json v1.0.151
+  Downloaded clap_builder v4.6.6
+  Downloaded sysinfo v0.30.13
+  Downloaded rayon v1.12.0
+  Downloaded chrono v0.4.45
+  Downloaded syn v3.0.3
+  Downloaded rustix v0.38.44
+  Downloaded libc v0.2.189
+  Downloaded 46 crates (3.6MiB) in 1.26s
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.47
+   Compiling crossbeam-utils v0.8.22
+   Compiling crossbeam-epoch v0.9.20
+   Compiling libc v0.2.189
+   Compiling serde_core v1.0.229
+   Compiling crossbeam-deque v0.8.7
+   Compiling rayon-core v1.13.0
+   Compiling autocfg v1.5.1
+   Compiling utf8parse v0.2.2
+   Compiling num-traits v0.2.19
+   Compiling anstyle-parse v1.0.0
+   Compiling anstyle v1.0.14
+   Compiling core-foundation-sys v0.8.7
+   Compiling either v1.17.0
+   Compiling anstyle-query v1.1.5
+   Compiling colorchoice v1.0.5
+   Compiling serde v1.0.229
+   Compiling rustix v0.38.44
+   Compiling zmij v1.0.23
+   Compiling is_terminal_polyfill v1.70.2
+   Compiling anstream v1.0.0
+   Compiling syn v3.0.3
+   Compiling errno v0.3.14
+   Compiling clap_lex v1.1.0
+   Compiling heck v0.5.0
+   Compiling bitflags v2.13.1
+   Compiling serde_json v1.0.151
+   Compiling strsim v0.11.1
+   Compiling anyhow v1.0.104
+   Compiling rayon v1.12.0
+   Compiling clap_builder v4.6.6
+   Compiling iana-time-zone v0.1.65
+   Compiling itoa v1.0.18
+   Compiling cfg-if v1.0.4
+   Compiling memchr v2.8.3
+   Compiling lazy_static v1.5.0
+   Compiling home v0.5.12
+   Compiling colored v2.2.0
+   Compiling which v6.0.3
+   Compiling serde_derive v1.0.229
+   Compiling clap_derive v4.6.4
+   Compiling sysinfo v0.30.13
+   Compiling clap v4.6.6
+   Compiling chrono v0.4.45
+   Compiling envdoctor v0.3.1 (/Users/taro/.cargo/git/checkouts/envdr-11367a66ebb86223/ef7ab50)
+    Finished `release` profile [optimized] target(s) in 25.69s
+  Installing /Users/taro/.cargo/bin/envdoctor
+  Installing /Users/taro/.cargo/bin/envdr
+   Installed package `envdoctor v0.3.1 (https://github.com/sha256san/envdr#ef7ab507)` (executables `envdoctor`, `envdr`)
+warning: be sure to add `/Users/taro/.cargo/bin` to your PATH to be able to run the installed binaries
+✨ Installation complete via Cargo! You can now run 'envdr' or 'envdoctor'.
+envdoctor 0.3.1
+(base)
+ 󰉋 ~  node v26.5.0 py v3.13.13 took 27s
+❯ envdr
+
+ 🩺  envdoctor  -  Developer Environment Diagnostic Tool
+ ────────────────────────────────────────────────────────────
+ ℹ OS: Darwin 27.0 | Arch: aarch64 | Kernel: 27.0.0
+ ────────────────────────────────────────────────────────────
+
+ WARN  System & Environment
+   ✔ OS & Architecture (Darwin 27.0)
+   ✔ Hardware Resources
+   ▲ PATH Environment Variable
+     • Total entries in PATH: 25
+     • Non-existent path: /var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin
+     • Non-existent path: /var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin
+     • Non-existent path: /var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin
+     • Non-existent path: /pkg/env/global/bin
+     • Non-existent path: /Library/Apple/usr/bin
+     Warning: Found 5 non-existent path(s) in PATH
+       Cause: Directories specified in PATH do not exist on the filesystem
+       Impact: Commands installed in these directories may fail to execute or produce confusing 'command not found' errors
+     💡 Recommendation: Remove non-existent directories from your PATH in ~/.bashrc or ~/.zshrc
+        Verify: $ echo $PATH
+   ✔ Package Manager & Cache
+
+ INFO  Shell & Configuration
+   ✔ Login Shell (zsh 5.9 (arm64-apple-darwin26.0))
+   ℹ Configuration: ~/.zshrc
+     Note: Found 8 'export PATH=' entries. Consider consolidating them.
+   ✔ Configuration: ~/.profile
+
+  OK   Python Environment
+   ✔ Python Interpreter (Python 3.13.13)
+   ✔ Pip Package Manager (pip 26.0.1 from /Users/taro/miniconda3/lib/python3.13/site-packages/pip (python 3.13))
+   ✔ Python Project / Package Tools
+
+ WARN  Rust Toolchain
+   ✔ rustc (Compiler) (rustc 1.97.1 (8bab26f4f 2026-07-14) (Homebrew))
+   ✔ Cargo (Build Tool) (cargo 1.97.1 (c980f4866 2026-06-30) (Homebrew))
+   ℹ rustup (Toolchain Manager)
+     💡 Recommendation: Consider installing rustup (https://rustup.rs) for multi-toolchain and cross-compilation support
+   ▲ Cargo Binary Path (~/.cargo/bin)
+     Warning: ~/.cargo/bin is not in your PATH
+       Cause: Cargo executable directory is omitted from shell PATH variable
+       Impact: Binaries installed via 'cargo install' cannot be executed directly by name
+     💡 Recommendation: Add Cargo bin directory to your shell configuration (~/.bashrc or ~/.zshrc)
+        $ export PATH="$HOME/.cargo/bin:$PATH"
+        Verify: $ echo $PATH | grep -q '.cargo/bin'
+
+  OK   Node.js & JavaScript Runtime
+   ✔ Node.js Runtime (v26.5.0)
+   ✔ Package Managers
+
+ WARN  C / C++ Toolchain
+   ✔ C/C++ Compilers
+   ▲ C/C++ & Rust Linkers
+     • No standard linker (ld/lld/mold) found
+   ✔ C/C++ Build Systems
+
+ INFO  Java / JVM Development Environment
+   ✔ Java Runtime (JRE/JDK) (openjdk 21.0.12 2026-07-21)
+   ✔ Java Compiler (javac) (javac 21.0.12)
+   ℹ JAVA_HOME Environment Variable
+     Note: JAVA_HOME is not set in environment (many build tools recommend setting it)
+     💡 Recommendation: Export JAVA_HOME in shell profile
+        $ export JAVA_HOME=$(dirname $(dirname $(readlink -f /opt/homebrew/opt/openjdk@21/bin/java)))
+
+  OK   Ruby Environment
+   ✔ Ruby Interpreter (ruby 2.6.10p210 (2022-04-12 revision 67958) [universal.arm64e-darwin26])
+   ✔ RubyGems Package Manager (3.0.3.1)
+   ✔ Bundler (Bundler version 1.17.2)
+
+ WARN  PHP Environment
+   ✔ PHP CLI (PHP 8.5.7 (cli) (built: Jun  2 2026 20:59:56) (NTS))
+   ▲ Composer
+     Warning: Composer package manager was not found on PATH
+     💡 Recommendation: Install Composer
+        $ curl -sS https://getcomposer.org/installer | php && sudo mv composer.phar /usr/local/bin/composer
+        Composer is the dependency manager for PHP.
+
+  OK   Swift Toolchain
+   ✔ Swift Compiler & Driver (Apple Swift version 6.4 (swiftlang-6.4.0.27.1 clang-2100.3.27.1))
+   ✔ Swiftc (Standalone Compiler)
+
+  OK   Dart & Flutter SDK
+   ✔ Dart SDK (Dart SDK version: 3.8.1 (stable) (Wed May 28 00:47:25 2025 -0700) on "macos_arm64")
+   ✔ Flutter SDK (┌─────────────────────────────────────────────────────────┐)
+
+  OK   Lua Runtime & Tools
+   ✔ LuaJIT (Just-In-Time Compiler) (LuaJIT 2.1.1782726002 -- Copyright (C) 2005-2026 Mike Pall. https://luajit.org/)
+
+  OK   Git & Version Control
+   ✔ Git CLI (git version 2.54.0 (Apple Git-157))
+   ✔ Git Author Configuration
+   ✔ Git Commit Signing
+
+ FAIL  Docker & Containerization
+   ✔ Docker CLI (Docker version 29.6.1, build 8900f1d)
+   ✖ Docker Daemon & Permissions
+     Error: Docker daemon check failed: failed to connect to the docker API at unix:///Users/taro/.docker/run/docker.sock; check if the path is correct and if the daemon is running: dial unix /Users/taro/.docker/run/docker.sock: connect: no such file or directory
+       Cause: Docker daemon returned an unexpected error response
+       Impact: Docker daemon operations are unavailable
+   ✔ Docker Compose (Docker Compose version v5.2.0)
+
+ INFO  GPU & Acceleration (CUDA / ROCm)
+   ℹ GPU / Hardware Acceleration
+
+ ────────────────────────────────────────────────────────────
+ Summary
+   ✔ 30 checks passed
+   ▲ 4 warnings
+   ✖ 1 errors
+   ℹ 4 informational
+
+ Issues:
+   1. [WARN] System & Environment: Found 5 non-existent path(s) in PATH
+      Impact: Commands installed in these directories may fail to execute or produce confusing 'command not found' errors
+   2. [WARN] Rust Toolchain: ~/.cargo/bin is not in your PATH
+      Impact: Binaries installed via 'cargo install' cannot be executed directly by name
+      Fix: $ export PATH="$HOME/.cargo/bin:$PATH"
+   3. [WARN] PHP Environment: Composer package manager was not found on PATH
+      Fix: $ curl -sS https://getcomposer.org/installer | php && sudo mv composer.phar /usr/local/bin/composer
+   4. [ERROR] Docker & Containerization: Docker daemon check failed: failed to connect to the docker API at unix:///Users/taro/.docker/run/docker.sock; check if the path is correct and if the daemon is running: dial unix /Users/taro/.docker/run/docker.sock: connect: no such file or directory
+      Impact: Docker daemon operations are unavailable
+
+ Run `envdr fix` to preview or apply available fixes.
+ Run `envdr --help` for more options.
+
+(base)
+ 󰉋 ~  node v26.5.0 py v3.13.13 took 14s
+❯
