@@ -106,21 +106,21 @@ jobs:
             DEB_DOC_DIR="${TMP_DIR}/deb_envdoctor"
             mkdir -p "${DEB_DOC_DIR}/DEBIAN" "${DEB_DOC_DIR}/usr/bin" "${DEB_DOC_DIR}/usr/share/doc/envdoctor"
 
-            cat <<EOF > "${DEB_DOC_DIR}/DEBIAN/control"
-Package: envdoctor
-Version: ${VERSION}
-Section: devel
-Priority: optional
-Architecture: ${{ matrix.deb_arch }}
-Provides: envdr
-Replaces: envdr
-Maintainer: envdoctor team <sha256san@users.noreply.github.com>
-Homepage: https://github.com/sha256san/envdr
-Description: Automated Developer Environment Diagnostic & Health Check Tool
- envdoctor (envdr) diagnoses Python, Rust, Go, Node.js, C/C++, Docker, Git,
- GPU/CUDA/ROCm environments, identifies root causes of issues, and suggests
- actionable fixes.
-EOF
+            {
+              echo "Package: envdoctor"
+              echo "Version: ${VERSION}"
+              echo "Section: devel"
+              echo "Priority: optional"
+              echo "Architecture: ${{ matrix.deb_arch }}"
+              echo "Provides: envdr"
+              echo "Replaces: envdr"
+              echo "Maintainer: envdoctor team <sha256san@users.noreply.github.com>"
+              echo "Homepage: https://github.com/sha256san/envdr"
+              echo "Description: Automated Developer Environment Diagnostic & Health Check Tool"
+              echo " envdoctor (envdr) diagnoses Python, Rust, Go, Node.js, C/C++, Docker, Git,"
+              echo " GPU/CUDA/ROCm environments, identifies root causes of issues, and suggests"
+              echo " actionable fixes."
+            } > "${DEB_DOC_DIR}/DEBIAN/control"
 
             cp "${BIN_DIR}/envdoctor" "${DEB_DOC_DIR}/usr/bin/"
             cp "${BIN_DIR}/envdr" "${DEB_DOC_DIR}/usr/bin/"
@@ -130,18 +130,19 @@ EOF
             # Create alias package envdr
             DEB_DR_DIR="${TMP_DIR}/deb_envdr"
             mkdir -p "${DEB_DR_DIR}/DEBIAN" "${DEB_DR_DIR}/usr/bin"
-            cat <<EOF > "${DEB_DR_DIR}/DEBIAN/control"
-Package: envdr
-Version: ${VERSION}
-Section: devel
-Priority: optional
-Architecture: ${{ matrix.deb_arch }}
-Provides: envdoctor
-Replaces: envdoctor
-Maintainer: envdoctor team <sha256san@users.noreply.github.com>
-Homepage: https://github.com/sha256san/envdr
-Description: Automated Developer Environment Diagnostic & Health Check Tool (envdr alias)
-EOF
+            {
+              echo "Package: envdr"
+              echo "Version: ${VERSION}"
+              echo "Section: devel"
+              echo "Priority: optional"
+              echo "Architecture: ${{ matrix.deb_arch }}"
+              echo "Provides: envdoctor"
+              echo "Replaces: envdoctor"
+              echo "Maintainer: envdoctor team <sha256san@users.noreply.github.com>"
+              echo "Homepage: https://github.com/sha256san/envdr"
+              echo "Description: Automated Developer Environment Diagnostic & Health Check Tool (envdr alias)"
+            } > "${DEB_DR_DIR}/DEBIAN/control"
+
             cp "${BIN_DIR}/envdr" "${DEB_DR_DIR}/usr/bin/"
             cp "${BIN_DIR}/envdoctor" "${DEB_DR_DIR}/usr/bin/"
             dpkg-deb --build "${DEB_DR_DIR}" "${DIST_DIR}/envdr_${VERSION}_${{ matrix.deb_arch }}.deb"
