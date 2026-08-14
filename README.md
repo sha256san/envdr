@@ -13,7 +13,8 @@
 [診断対象](#-診断対象ツール--環境) •
 [使い方](#-使い方--コマンド) •
 [出力フォーマット](#-マルチフォーマット出力) •
-[安全な自動修復](#-安全な自動修復-fix)
+[安全な自動修復](#-安全な自動修復-fix) •
+[連絡先・ご要望](#-ご意見ご要望連絡先-feedback--contact)
 
 </div>
 
@@ -203,7 +204,7 @@ envdr fix --apply
      Warning: Git user.name is not set globally
      Warning: Git user.email is not set globally
      💡 Recommendation: Set Git global identity
-        $ git config --global user.name "sha256" && git config --global user.email "sha256san@gmail.com"
+        $ git config --global user.name "Your Name" && git config --global user.email "you@example.com"
 ```
 
 ### JSON 出力 (`--format json`)
@@ -254,6 +255,17 @@ envdoctor/
 ```bash
 cargo test
 ```
+
+---
+
+## 💬 ご意見・ご要望・連絡先 (Feedback & Contact)
+
+機能の追加要望、新しい言語・ツールのチェッカーリクエスト、バグ報告などは、以下のいずれかよりお気軽にお寄せください！
+
+- 🐛 **Issue / バグ報告・機能リクエスト**: [GitHub Issues](https://github.com/sha256san/envdr/issues)
+- 💡 **ディスカッション・アイデア共有**: [GitHub Discussions](https://github.com/sha256san/envdr/discussions)
+- ✉️ **メール連絡先**: [contact@example.com](mailto:contact@example.com)
+- 🐙 **リポジトリ**: [https://github.com/sha256san/envdr](https://github.com/sha256san/envdr)
 
 ---
 
