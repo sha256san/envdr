@@ -5,6 +5,17 @@
 
 ---
 
+## [0.3.1] - 2026-08-14
+
+### Fixed
+- **macOS (BSD) `mktemp` 互換性バグの修正**:
+  - macOS の `mktemp` においてテンプレート末尾に拡張子（`.tar.gz`, `.deb`）が含まれると `mkstemp failed ...: File exists` エラーとなる問題を修正。
+  - POSIX / BSD 準拠のテンポラリディレクトリ作成（`mktemp -d /tmp/envdr_inst_XXXXXX`）および終了時トラップ（`trap 'rm -rf "${TMP_DIR}"' EXIT`）を採用。
+- **macOS インストール時のビルドフォールバック強化**:
+  - Pre-compiled バイナリが存在しない環境での Cargo / Homebrew ソースビルド自動フォールバックを安定化。
+
+---
+
 ## [0.3.0] - 2026-08-14
 
 ### Added

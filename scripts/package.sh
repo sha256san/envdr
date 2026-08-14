@@ -2,7 +2,7 @@
 # envdoctor multi-architecture packaging script
 set -euo pipefail
 
-VERSION="0.3.0"
+VERSION="0.3.1"
 DIST_DIR="dist"
 TMP_DIR="target/package_tmp"
 

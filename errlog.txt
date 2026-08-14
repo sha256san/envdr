@@ -1,0 +1,27 @@
+❯ curl -fsSL https://raw.githubusercontent.com/sha256san/envdr/main/install.sh | sudo bash
+Password:
+🩺  envdoctor  -  Developer Environment Diagnostic Tool Installer
+────────────────────────────────────────────────────────────
+ℹ️  Detected System: OS=darwin, Arch=aarch64
+🧹 Removing previous envdoctor/envdr installation if present...
+🍎 Apple Silicon (M1/M2/M3/M4) detected.
+🍺 Homebrew detected! You can also install via: brew install sha256san/tap/envdoctor
+📥 Downloading macOS release package (v0.3.0)...
+❌ Failed to download pre-compiled release from GitHub.
+💡 You can build directly with Cargo:
+   cargo install --git https://github.com/sha256san/envdr
+(base)
+ 󰉋 ~  node v26.5.0 py v3.13.13 took 3s
+❯
+
+❯ curl -fsSL https://raw.githubusercontent.com/sha256san/envdr/main/install.sh | sudo bash
+Password:
+🩺  envdoctor  -  Developer Environment Diagnostic Tool Installer
+────────────────────────────────────────────────────────────
+ℹ️  Detected System: OS=darwin, Arch=aarch64
+🧹 Removing previous envdoctor/envdr installation if present...
+🍎 Apple Silicon (M1/M2/M3/M4) detected.
+mktemp: mkstemp failed on /tmp/envdr_XXXXXX.tar.gz: File exists
+(base)
+ 󰉋 ~  node v26.5.0 py v3.13.13 took 1s
+❯

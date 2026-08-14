@@ -3,7 +3,7 @@
 set -euo pipefail
 
 REPO="sha256san/envdr"
-VERSION="0.3.0"
+VERSION="0.3.1"
 
 echo "🩺  envdoctor  -  Developer Environment Diagnostic Tool Installer"
 echo "────────────────────────────────────────────────────────────"
@@ -14,6 +14,10 @@ if [ "$(id -u)" -eq 0 ]; then
 else
     SUDO="sudo"
 fi
+
+# POSIX / macOS (BSD) 互換の安全なテンポラリディレクトリ作成 (テンプレート末尾を XXXXXX に統一)
+TMP_DIR=$(mktemp -d /tmp/envdr_inst_XXXXXX)
+trap 'rm -rf "${TMP_DIR}"' EXIT INT TERM
 
 RAW_ARCH=$(uname -m)
 RAW_OS=$(uname -s | tr '[:upper:]' '[:lower:]')
@@ -76,13 +80,14 @@ if [ "$OS" = "darwin" ]; then
         echo "🍎 Intel Mac detected."
     fi
 
-    TMP_TAR=$(mktemp /tmp/envdr_XXXXXX.tar.gz)
+    TMP_TAR="${TMP_DIR}/envdr.tar.gz"
     TAR_URL="https://github.com/${REPO}/releases/download/v${VERSION}/envdr-v${VERSION}-darwin-${DARWIN_ARCH}.tar.gz"
     TAR_FALLBACK="https://raw.githubusercontent.com/${REPO}/main/docs/dist/envdr-v${VERSION}-darwin-${DARWIN_ARCH}.tar.gz"
 
     echo "📥 Downloading macOS release package (v${VERSION})..."
     if curl -fsSL -o "${TMP_TAR}" "${TAR_URL}" 2>/dev/null || curl -fsSL -o "${TMP_TAR}" "${TAR_FALLBACK}" 2>/dev/null; then
-        TMP_EXTRACT=$(mktemp -d /tmp/envdr_extract_XXXXXX)
+        TMP_EXTRACT="${TMP_DIR}/extract"
+        mkdir -p "${TMP_EXTRACT}"
         tar -xzf "${TMP_TAR}" -C "${TMP_EXTRACT}"
 
         echo "📦 Copying binaries to ${INSTALL_DIR}..."
@@ -90,7 +95,6 @@ if [ "$OS" = "darwin" ]; then
         ${SUDO} cp "${TMP_EXTRACT}"/*/envdoctor "${INSTALL_DIR}/"
         ${SUDO} cp "${TMP_EXTRACT}"/*/envdr "${INSTALL_DIR}/"
         ${SUDO} chmod 755 "${INSTALL_DIR}/envdoctor" "${INSTALL_DIR}/envdr"
-        rm -rf "${TMP_TAR}" "${TMP_EXTRACT}"
 
         echo "✨ Installation complete! You can now run 'envdr' or 'envdoctor'."
         hash -r 2>/dev/null || true
@@ -101,7 +105,7 @@ fi
 
 # 5. Linux (x86_64 / ARM64) の Debian パッケージインストール
 if [ "$OS" = "linux" ] && command -v dpkg >/dev/null 2>&1 && [ "${DEB_ARCH}" != "unknown" ]; then
-    TMP_DEB=$(mktemp /tmp/envdoctor_XXXXXX.deb)
+    TMP_DEB="${TMP_DIR}/envdoctor.deb"
     DEB_URL="https://github.com/${REPO}/releases/download/v${VERSION}/envdoctor_${VERSION}_${DEB_ARCH}.deb"
     DEB_FALLBACK="https://raw.githubusercontent.com/${REPO}/main/docs/apt/pool/main/e/envdoctor/envdoctor_${VERSION}_${DEB_ARCH}.deb"
     
@@ -109,7 +113,6 @@ if [ "$OS" = "linux" ] && command -v dpkg >/dev/null 2>&1 && [ "${DEB_ARCH}" != 
     if curl -fsSL -o "${TMP_DEB}" "${DEB_URL}" 2>/dev/null || curl -fsSL -o "${TMP_DEB}" "${DEB_FALLBACK}" 2>/dev/null; then
         echo "📦 Installing via dpkg..."
         ${SUDO} dpkg -i "${TMP_DEB}" || ${SUDO} apt-get install -f -y
-        rm -f "${TMP_DEB}"
         echo "✨ Installation complete! You can now run 'envdr' or 'envdoctor'."
         hash -r 2>/dev/null || true
         envdr --version || true
@@ -119,13 +122,14 @@ fi
 
 # 6. Linux スタンドアロンバイナリ (tar.gz) インストール
 if [ "$OS" = "linux" ]; then
-    TMP_TAR=$(mktemp /tmp/envdr_XXXXXX.tar.gz)
+    TMP_TAR="${TMP_DIR}/envdr.tar.gz"
     TAR_URL="https://github.com/${REPO}/releases/download/v${VERSION}/envdr-v${VERSION}-linux-${ARCH}.tar.gz"
     TAR_FALLBACK="https://raw.githubusercontent.com/${REPO}/main/docs/dist/envdr-v${VERSION}-linux-${ARCH}.tar.gz"
 
     echo "📥 Downloading binary package for Linux ${ARCH} (v${VERSION})..."
     if curl -fsSL -o "${TMP_TAR}" "${TAR_URL}" 2>/dev/null || curl -fsSL -o "${TMP_TAR}" "${TAR_FALLBACK}" 2>/dev/null; then
-        TMP_EXTRACT=$(mktemp -d /tmp/envdr_extract_XXXXXX)
+        TMP_EXTRACT="${TMP_DIR}/extract"
+        mkdir -p "${TMP_EXTRACT}"
         tar -xzf "${TMP_TAR}" -C "${TMP_EXTRACT}"
 
         echo "📦 Copying binaries to ${INSTALL_DIR}..."
@@ -133,7 +137,6 @@ if [ "$OS" = "linux" ]; then
         ${SUDO} cp "${TMP_EXTRACT}"/*/envdoctor "${INSTALL_DIR}/"
         ${SUDO} cp "${TMP_EXTRACT}"/*/envdr "${INSTALL_DIR}/"
         ${SUDO} chmod 755 "${INSTALL_DIR}/envdoctor" "${INSTALL_DIR}/envdr"
-        rm -rf "${TMP_TAR}" "${TMP_EXTRACT}"
 
         echo "✨ Installation complete! You can now run 'envdr' or 'envdoctor'."
         hash -r 2>/dev/null || true

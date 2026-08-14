@@ -1,7 +1,7 @@
 class Envdoctor < Formula
   desc "Automated Developer Environment Diagnostic & Health Check Tool"
   homepage "https://github.com/sha256san/envdr"
-  url "https://github.com/sha256san/envdr.git", tag: "v0.3.0"
+  url "https://github.com/sha256san/envdr.git", tag: "v0.3.1"
   license "MIT"
   head "https://github.com/sha256san/envdr.git", branch: "main"
 

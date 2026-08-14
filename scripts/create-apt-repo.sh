@@ -2,7 +2,7 @@
 set -euo pipefail
 
 REPO_DIR="docs/apt"
-VERSION="0.3.0"
+VERSION="0.3.1"
 PKG_DEB="dist/envdoctor_${VERSION}_amd64.deb"
 
 if [ ! -f "${PKG_DEB}" ]; then
