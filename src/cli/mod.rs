@@ -109,6 +109,22 @@ pub struct Cli {
     /// Write report to a file instead of stdout
     #[arg(short, long, global = true)]
     pub output: Option<PathBuf>,
+
+    /// Preview or apply automatic fixes for detected issues
+    #[arg(long, global = true)]
+    pub fix: bool,
+
+    /// Apply fixes directly (when using --fix or fix subcommand)
+    #[arg(long, global = true)]
+    pub apply: bool,
+
+    /// Preview fix plan without applying changes (default)
+    #[arg(long, global = true)]
+    pub dry_run: bool,
+
+    /// Run in CI mode (fail with exit code on any warnings or errors)
+    #[arg(long, global = true)]
+    pub ci: bool,
 }
 
 impl Cli {

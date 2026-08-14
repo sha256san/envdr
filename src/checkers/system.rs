@@ -32,8 +32,13 @@ impl Checker for SystemChecker {
 
         // 1. OS & Architecture
         let mut os_item = DiagnosticItem::ok("OS & Architecture");
-        os_item.version = Some(format!("{} {} ({})", sys.os, sys.os_version, sys.arch));
+        let wsl_tag = if sys.is_wsl { " [WSL2]" } else { "" };
+        os_item.version = Some(format!("{} {}{}", sys.os, sys.os_version, wsl_tag));
+        os_item.details.push(format!("Architecture: {}", sys.arch));
         os_item.details.push(format!("Kernel: {}", sys.kernel_version));
+        if sys.is_wsl {
+            os_item.details.push("Environment: Windows Subsystem for Linux (WSL2)".to_string());
+        }
         os_item.details.push(format!("Hostname: {}", sys.host_name));
         result.items.push(os_item);
 
@@ -61,17 +66,29 @@ impl Checker for SystemChecker {
         let mut path_item = DiagnosticItem::ok("PATH Environment Variable");
         path_item.details.push(format!("Total entries in PATH: {}", path_analyses.len()));
 
+        let mut linux_paths_count = 0;
+        let mut windows_paths_count = 0;
         let mut non_existent_paths = Vec::new();
         let mut duplicate_paths = Vec::new();
 
         for entry in path_analyses {
             let path_str = entry.path.to_string_lossy().to_string();
+            if path_str.starts_with("/mnt/c/") || path_str.starts_with("/mnt/d/") || path_str.contains(":\\") {
+                windows_paths_count += 1;
+            } else {
+                linux_paths_count += 1;
+            }
+
             if !entry.exists {
                 non_existent_paths.push(path_str.clone());
             }
             if entry.is_duplicate {
                 duplicate_paths.push(path_str);
             }
+        }
+
+        if sys.is_wsl && windows_paths_count > 0 {
+            path_item.details.push(format!("Breakdown: {} Linux native paths, {} Windows mounted paths (/mnt/c/)", linux_paths_count, windows_paths_count));
         }
 
         if !non_existent_paths.is_empty() {
@@ -83,7 +100,11 @@ impl Checker for SystemChecker {
                 Status::Warning,
                 format!("Found {} non-existent path(s) in PATH", non_existent_paths.len()),
             );
-            issue.cause = Some("Directories specified in PATH do not exist on the filesystem".into());
+            issue.cause = if sys.is_wsl {
+                Some("Directories specified in Linux or Windows imported PATH do not exist".into())
+            } else {
+                Some("Directories specified in PATH do not exist on the filesystem".into())
+            };
             issue.impact = Some("Commands installed in these directories may fail to execute or produce confusing 'command not found' errors".into());
             path_item.issues.push(issue);
 

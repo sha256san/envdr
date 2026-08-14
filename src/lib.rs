@@ -15,13 +15,38 @@ pub fn run() -> anyhow::Result<()> {
     let cli = Cli::parse();
     let registry = checkers::CheckerRegistry::default();
 
-    let results: Vec<CategoryResult> = match &cli.command {
-        Some(Commands::Fix { target, apply, .. }) => {
-            let all_results = registry.run_all();
-            let fixes = core::fixer::AutoFixer::plan_fixes(&all_results, target.as_deref());
-            core::fixer::AutoFixer::execute_plan(&fixes, *apply)?;
-            return Ok(());
+    // Check if top-level --fix flag or `fix` subcommand was requested
+    if cli.fix || matches!(&cli.command, Some(Commands::Fix { .. })) {
+        let (target, apply) = match &cli.command {
+            Some(Commands::Fix { target, apply, .. }) => (target.as_deref(), *apply || cli.apply),
+            _ => (None, cli.apply),
+        };
+
+        let all_results = registry.run_all();
+        let fixes = core::fixer::AutoFixer::plan_fixes(&all_results, target);
+        core::fixer::AutoFixer::execute_plan(&fixes, apply)?;
+
+        // If applied, automatically run a re-scan to show resolved status
+        if apply && !fixes.is_empty() {
+            println!("\n🔍 Running automatic post-fix re-scan...\n");
+            let after_results = registry.run_all();
+            let after_summary = DiagnosticSummary::from_categories(&after_results);
+            let sys_report = system::SystemReport::collect();
+            let full_report = FullDiagnosticReport {
+                version: env!("CARGO_PKG_VERSION").to_string(),
+                timestamp: chrono::Utc::now().to_rfc3339(),
+                system: sys_report,
+                summary: after_summary,
+                results: after_results,
+            };
+            let formatter = TerminalFormatter::new(false, false);
+            formatter.print_summary(&full_report);
         }
+
+        return Ok(());
+    }
+
+    let results: Vec<CategoryResult> = match &cli.command {
         Some(Commands::Check { target }) => {
             if let Some(res) = registry.run_target(target) {
                 vec![res]
@@ -31,7 +56,7 @@ pub fn run() -> anyhow::Result<()> {
                     target,
                     registry.available_targets().join(", ")
                 );
-                std::process::exit(1);
+                std::process::exit(11); // Invalid option / target
             }
         }
         None | Some(Commands::Doctor) | Some(Commands::Report) => {
@@ -101,6 +126,7 @@ pub fn run() -> anyhow::Result<()> {
                 registry.run_all()
             }
         }
+        Some(Commands::Fix { .. }) => unreachable!(),
     };
 
     let sys_report = system::SystemReport::collect();
@@ -140,7 +166,12 @@ pub fn run() -> anyhow::Result<()> {
         }
     }
 
-    if full_report.summary.critical > 0 || full_report.summary.error > 0 {
+    // Determine exit codes according to specification (addplan4 §14)
+    if full_report.summary.critical > 0 {
+        std::process::exit(3);
+    } else if full_report.summary.error > 0 {
+        std::process::exit(2);
+    } else if full_report.summary.warning > 0 && cli.ci {
         std::process::exit(1);
     }
 

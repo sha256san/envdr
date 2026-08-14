@@ -10,6 +10,7 @@ pub struct SystemReport {
     pub kernel_version: String,
     pub host_name: String,
     pub arch: String,
+    pub is_wsl: bool,
     pub total_memory_mb: u64,
     pub used_memory_mb: u64,
     pub cpu_count: usize,
@@ -34,12 +35,17 @@ impl SystemReport {
             .map(|cpu| cpu.brand().trim().to_string())
             .unwrap_or_else(|| "Unknown".to_string());
 
+        let is_wsl = std::path::Path::new("/proc/sys/fs/binfmt_misc/WSLInterop").exists()
+            || kernel_version.to_lowercase().contains("microsoft")
+            || kernel_version.to_lowercase().contains("wsl");
+
         Self {
             os,
             os_version,
             kernel_version,
             host_name,
             arch,
+            is_wsl,
             total_memory_mb,
             used_memory_mb,
             cpu_count,

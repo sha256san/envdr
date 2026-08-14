@@ -53,6 +53,20 @@ impl AutoFixer {
         fixes
     }
 
+    /// シェル設定ファイルのバックアップを作成
+    pub fn backup_shell_configs() {
+        if let Some(home) = std::env::var_os("HOME") {
+            let home_path = std::path::PathBuf::from(home);
+            for cfg in &[".bashrc", ".zshrc", ".profile"] {
+                let src = home_path.join(cfg);
+                if src.exists() {
+                    let bak = home_path.join(format!("{}.envdr.bak", cfg));
+                    let _ = std::fs::copy(&src, &bak);
+                }
+            }
+        }
+    }
+
     /// 修復プランを表示（dry-run）または適用
     pub fn execute_plan(fixes: &[FixAction], apply: bool) -> anyhow::Result<()> {
         if fixes.is_empty() {
@@ -92,16 +106,17 @@ impl AutoFixer {
             );
             println!(
                 " {}",
-                "To apply these fixes automatically, run with: envdoctor fix --apply"
+                "To apply these fixes automatically, run with: envdoctor --fix --apply (or envdr fix --apply)"
                     .bright_cyan()
             );
             println!();
             return Ok(());
         }
 
-        // Apply mode
+        // Apply mode: create backups first
+        Self::backup_shell_configs();
         println!("{}", " ────────────────────────────────────────────────────────────".bright_black());
-        println!("{}", " 🚀 Applying fixes...".green().bold());
+        println!("{}", " 🚀 Applying fixes (Configuration backup saved to ~/.bashrc.envdr.bak)...".green().bold());
         println!();
 
         for (idx, fix) in fixes.iter().enumerate() {
