@@ -5,9 +5,23 @@
 
 ---
 
-## [Unreleased]
+## [0.2.0] - 2026-08-14
 
 ### Added
+- **マルチアーキテクチャ対応 & 配布基盤**:
+  - Linux ARM64 (`aarch64-unknown-linux-gnu` / `musl`) 向けパッケージング & `.deb` 対応
+  - macOS Apple Silicon (M1/M2/M3/M4: `aarch64-apple-darwin`) 向けネイティブバイナリ対応
+  - macOS Intel (`x86_64-apple-darwin`) 向けバイナリ対応 & Homebrew Tap (`sha256san/tap/envdoctor`)
+- **マルチプラットフォーム対応インストーラー (`install.sh`)**:
+  - OS (`Linux`, `Darwin`) および CPU アーキテクチャ (`x86_64`, `aarch64`/`arm64`) の自動判別ロジック
+  - Apple Silicon / Linux ARM64 への自動ダウンロード & 配置
+- **厳密なインストール判定基準 (Installation Criteria Integrity)**:
+  - 壊れたシンボリックリンクや実行権限なしファイルの自動除外
+  - `asdf`, `pyenv`, `rbenv`, `nvm`, `jenv` などのダミー空シム（実体バージョン未選択）の自動検出・除外
+- **パッケージマネージャー鮮度・最新性診断**:
+  - APT キャッシュ更新日時の検証（最終 `apt update` から7日以上経過時に警告・推奨）
+  - Homebrew, Pacman, DNF などのメタデータ鮮度チェック
+  - システム診断 (`envdr --system`) への「Package Manager & Cache」診断項目追加
 - 短縮バイナリ名 `envdr` を `Cargo.toml` に追加
 - メジャー言語チェッカーの新規追加:
   - Go 診断 (`checkers::go`): `go`, `gofmt`, `GOPATH`, `GOROOT`, `golangci-lint`

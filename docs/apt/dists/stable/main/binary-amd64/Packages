@@ -1,5 +1,5 @@
 Package: envdoctor
-Version: 0.1.0
+Version: 0.2.0
 Section: devel
 Priority: optional
 Architecture: amd64
@@ -10,14 +10,14 @@ Description: Automated Developer Environment Diagnostic & Health Check Tool
  envdoctor (envdr) diagnoses Python, Rust, Go, Node.js, C/C++, Docker, Git,
  GPU/CUDA/ROCm environments, identifies root causes of issues, and suggests
  actionable fixes.
-Filename: pool/main/e/envdoctor/envdoctor_0.1.0_amd64.deb
-Size: 477336
-MD5sum: 7c2398dc85cb9082e22d5036f0b95666
-SHA1: 76a899f51152752f23b61f9f2cca4c78180bbbfa
-SHA256: 26526fd9affc22e682049d5fa00206e5ea700e23fd1b082ee36d63af02f3110f
+Filename: pool/main/e/envdoctor/envdoctor_0.2.0_amd64.deb
+Size: 459952
+MD5sum: ccf43557865a13ed7c0b626b794e0b96
+SHA1: 01b117f8d4f4781dea28c9fe58e800656da91589
+SHA256: f84741a567b0c40581322fbbaf6ec8368ddc732fa0243c7a53faa4a7c9e4d6d8
 
 Package: envdr
-Version: 0.1.0
+Version: 0.2.0
 Section: devel
 Priority: optional
 Architecture: amd64
@@ -25,8 +25,8 @@ Maintainer: envdoctor team <sha256san@users.noreply.github.com>
 Homepage: https://github.com/sha256san/envdr
 Provides: envdoctor
 Description: Automated Developer Environment Diagnostic & Health Check Tool (envdr alias)
-Filename: pool/main/e/envdoctor/envdr_0.1.0_amd64.deb
-Size: 477336
-MD5sum: 7c909b241e2b49aa5c66a82951b68ee7
-SHA1: 6d4961e403032daa064a978cd94c4dc05d231639
-SHA256: 1f3def70989856640168fb4411e8ca37e7c3de188e0711767e6219cba45add09
+Filename: pool/main/e/envdoctor/envdr_0.2.0_amd64.deb
+Size: 459960
+MD5sum: 52d0bc0f8805dac724d27a63cc7d33e4
+SHA1: 33ebb8850c1ca90cbe196764c8e4f3b900eab22c
+SHA256: c7d6b4151a9780cf5a355b0c567d78f2c9f64fe2b5e0d93b2d051f77457f53e5

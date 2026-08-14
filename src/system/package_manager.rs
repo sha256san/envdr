@@ -1,4 +1,7 @@
 use crate::utils::path::find_executable;
+use std::fs;
+use std::path::Path;
+use std::time::SystemTime;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PackageManager {
@@ -11,6 +14,21 @@ pub enum PackageManager {
     Winget,
     Choco,
     Scoop,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FreshnessLevel {
+    Fresh,
+    Stale,
+    Unknown,
+}
+
+#[derive(Debug, Clone)]
+pub struct FreshnessReport {
+    pub level: FreshnessLevel,
+    pub days_since_update: Option<u64>,
+    pub message: String,
+    pub recommended_command: Option<String>,
 }
 
 impl PackageManager {
@@ -71,6 +89,194 @@ impl PackageManager {
             PackageManager::Choco => format!("choco install -y {}", pkg_name),
             PackageManager::Scoop => format!("scoop install {}", pkg_name),
         }
+    }
+
+    /// パッケージマネージャーのキャッシュ鮮度・最終更新日時の診断
+    pub fn check_freshness(&self) -> FreshnessReport {
+        match self {
+            PackageManager::Apt => check_apt_freshness(),
+            PackageManager::Brew => check_brew_freshness(),
+            PackageManager::Pacman => check_pacman_freshness(),
+            PackageManager::Dnf => check_dnf_freshness(),
+            _ => FreshnessReport {
+                level: FreshnessLevel::Unknown,
+                days_since_update: None,
+                message: format!("Freshness check not implemented for {}", self.name()),
+                recommended_command: None,
+            },
+        }
+    }
+}
+
+/// APT のキャッシュ更新鮮度を判定（7日以上経過で警告）
+fn check_apt_freshness() -> FreshnessReport {
+    let candidate_paths = [
+        "/var/lib/apt/periodic/update-success-stamp",
+        "/var/cache/apt/pkgcache.bin",
+        "/var/lib/apt/lists",
+    ];
+
+    let mut latest_mtime: Option<SystemTime> = None;
+    for path in &candidate_paths {
+        if let Ok(metadata) = fs::metadata(path) {
+            if let Ok(mtime) = metadata.modified() {
+                latest_mtime = match latest_mtime {
+                    Some(prev) if mtime > prev => Some(mtime),
+                    None => Some(mtime),
+                    _ => latest_mtime,
+                };
+            }
+        }
+    }
+
+    if let Some(mtime) = latest_mtime {
+        if let Ok(elapsed) = SystemTime::now().duration_since(mtime) {
+            let days = elapsed.as_secs() / 86400;
+            if days >= 7 {
+                return FreshnessReport {
+                    level: FreshnessLevel::Stale,
+                    days_since_update: Some(days),
+                    message: format!("APT package cache was updated {} day(s) ago (stale > 7 days)", days),
+                    recommended_command: Some("sudo apt update".to_string()),
+                };
+            } else {
+                return FreshnessReport {
+                    level: FreshnessLevel::Fresh,
+                    days_since_update: Some(days),
+                    message: format!("APT package cache is up-to-date (updated {} day(s) ago)", days),
+                    recommended_command: None,
+                };
+            }
+        }
+    }
+
+    FreshnessReport {
+        level: FreshnessLevel::Stale,
+        days_since_update: None,
+        message: "APT package cache timestamp not found or never updated".to_string(),
+        recommended_command: Some("sudo apt update".to_string()),
+    }
+}
+
+/// Homebrew の更新鮮度判定（14日以上経過で警告）
+fn check_brew_freshness() -> FreshnessReport {
+    let candidate_dirs = [
+        "/opt/homebrew/.git/FETCH_HEAD",
+        "/usr/local/Homebrew/.git/FETCH_HEAD",
+        "/home/linuxbrew/.linuxbrew/Homebrew/.git/FETCH_HEAD",
+    ];
+
+    for path in &candidate_dirs {
+        if let Ok(metadata) = fs::metadata(path) {
+            if let Ok(mtime) = metadata.modified() {
+                if let Ok(elapsed) = SystemTime::now().duration_since(mtime) {
+                    let days = elapsed.as_secs() / 86400;
+                    if days >= 14 {
+                        return FreshnessReport {
+                            level: FreshnessLevel::Stale,
+                            days_since_update: Some(days),
+                            message: format!("Homebrew repository was updated {} day(s) ago (stale > 14 days)", days),
+                            recommended_command: Some("brew update".to_string()),
+                        };
+                    } else {
+                        return FreshnessReport {
+                            level: FreshnessLevel::Fresh,
+                            days_since_update: Some(days),
+                            message: format!("Homebrew repository is up-to-date (updated {} day(s) ago)", days),
+                            recommended_command: None,
+                        };
+                    }
+                }
+            }
+        }
+    }
+
+    FreshnessReport {
+        level: FreshnessLevel::Unknown,
+        days_since_update: None,
+        message: "Homebrew cache timestamp could not be verified directly".to_string(),
+        recommended_command: Some("brew update".to_string()),
+    }
+}
+
+/// Pacman の更新鮮度判定
+fn check_pacman_freshness() -> FreshnessReport {
+    let sync_dir = Path::new("/var/lib/pacman/sync");
+    if let Ok(entries) = fs::read_dir(sync_dir) {
+        let mut latest_mtime: Option<SystemTime> = None;
+        for entry in entries.flatten() {
+            if let Ok(metadata) = entry.metadata() {
+                if let Ok(mtime) = metadata.modified() {
+                    latest_mtime = match latest_mtime {
+                        Some(prev) if mtime > prev => Some(mtime),
+                        None => Some(mtime),
+                        _ => latest_mtime,
+                    };
+                }
+            }
+        }
+
+        if let Some(mtime) = latest_mtime {
+            if let Ok(elapsed) = SystemTime::now().duration_since(mtime) {
+                let days = elapsed.as_secs() / 86400;
+                if days >= 14 {
+                    return FreshnessReport {
+                        level: FreshnessLevel::Stale,
+                        days_since_update: Some(days),
+                        message: format!("Pacman sync databases were updated {} day(s) ago (stale > 14 days)", days),
+                        recommended_command: Some("sudo pacman -Sy".to_string()),
+                    };
+                } else {
+                    return FreshnessReport {
+                        level: FreshnessLevel::Fresh,
+                        days_since_update: Some(days),
+                        message: format!("Pacman sync databases are up-to-date (updated {} day(s) ago)", days),
+                        recommended_command: None,
+                    };
+                }
+            }
+        }
+    }
+
+    FreshnessReport {
+        level: FreshnessLevel::Unknown,
+        days_since_update: None,
+        message: "Pacman sync database not found".to_string(),
+        recommended_command: Some("sudo pacman -Sy".to_string()),
+    }
+}
+
+/// DNF の更新鮮度判定
+fn check_dnf_freshness() -> FreshnessReport {
+    let cache_dir = Path::new("/var/cache/dnf");
+    if let Ok(metadata) = fs::metadata(cache_dir) {
+        if let Ok(mtime) = metadata.modified() {
+            if let Ok(elapsed) = SystemTime::now().duration_since(mtime) {
+                let days = elapsed.as_secs() / 86400;
+                if days >= 14 {
+                    return FreshnessReport {
+                        level: FreshnessLevel::Stale,
+                        days_since_update: Some(days),
+                        message: format!("DNF metadata cache was updated {} day(s) ago", days),
+                        recommended_command: Some("sudo dnf makecache".to_string()),
+                    };
+                } else {
+                    return FreshnessReport {
+                        level: FreshnessLevel::Fresh,
+                        days_since_update: Some(days),
+                        message: format!("DNF metadata cache is up-to-date (updated {} day(s) ago)", days),
+                        recommended_command: None,
+                    };
+                }
+            }
+        }
+    }
+
+    FreshnessReport {
+        level: FreshnessLevel::Unknown,
+        days_since_update: None,
+        message: "DNF cache metadata not found".to_string(),
+        recommended_command: Some("sudo dnf makecache".to_string()),
     }
 }
 
@@ -143,5 +349,12 @@ mod tests {
 
         let brew = PackageManager::Brew;
         assert_eq!(brew.install_command("git"), "brew install git");
+    }
+
+    #[test]
+    fn test_package_manager_freshness() {
+        let apt = PackageManager::Apt;
+        let report = apt.check_freshness();
+        assert!(matches!(report.level, FreshnessLevel::Fresh | FreshnessLevel::Stale | FreshnessLevel::Unknown));
     }
 }

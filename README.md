@@ -74,15 +74,37 @@
 
 ---
 
+## 💻 対応プラットフォーム & アーキテクチャ
+
+| OS | アーキテクチャ | 推奨インストール方法 |
+| :--- | :--- | :--- |
+| **macOS (Apple Silicon)** | Apple M1 / M2 / M3 / M4 (`arm64`) | `brew install sha256san/tap/envdoctor` またはワンライナー |
+| **macOS (Intel)** | Intel 64-bit (`x86_64`) | `brew install sha256san/tap/envdoctor` またはワンライナー |
+| **Linux (Ubuntu / Debian)** | Intel/AMD (`amd64`), ARM64 (`arm64`) | `sudo apt install envdoctor` またはワンライナー |
+| **Linux (汎用 / RHEL / Arch / Alpine)** | `x86_64`, `aarch64` (Graviton/Raspberry Pi) | ワンライナー または GitHub Releases バイナリ |
+| **Windows** | 64-bit (`x86_64`) | `cargo install` または Releases バイナリ |
+
+---
+
 ## 🚀 インストール & クイックスタート
 
-### 1. ワンライナーで簡単インストール (推奨)
+### 1. ワンライナーで自動インストール (OS & アーキテクチャ自動判別)
+
+Linux (x86_64 / ARM64) および macOS (Apple Silicon / Intel) の両方に対応しています：
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/sha256san/envdr/main/install.sh | sudo bash
 ```
 
-### 2. APT パッケージでインストール (`sudo apt install`)
+### 2. macOS (Homebrew Tap)
+
+```bash
+brew install sha256san/tap/envdoctor
+# または短縮名
+brew install sha256san/tap/envdr
+```
+
+### 3. Ubuntu / Debian (APT パッケージ)
 
 ```bash
 # APT リポジトリの登録
@@ -93,7 +115,7 @@ sudo apt update
 sudo apt install -y envdoctor
 ```
 
-### 3. ソースからビルドして実行
+### 4. ソースからビルドして実行
 
 ```bash
 git clone https://github.com/sha256san/envdr.git

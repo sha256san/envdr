@@ -1,4 +1,5 @@
 use crate::core::{CategoryResult, Checker, CheckerKind, DiagnosticItem, Issue, Recommendation, Status};
+use crate::system::package_manager::{FreshnessLevel, PackageManager};
 use crate::system::SystemReport;
 use crate::utils::path::analyze_path_env;
 
@@ -18,7 +19,7 @@ impl Checker for SystemChecker {
     }
 
     fn aliases(&self) -> Vec<&'static str> {
-        vec!["os", "path", "resources"]
+        vec!["os", "path", "resources", "pm"]
     }
 
     fn is_installed(&self) -> bool {
@@ -94,6 +95,32 @@ impl Checker for SystemChecker {
         }
 
         result.items.push(path_item);
+
+        // 4. Package Manager & Cache Freshness
+        if let Some(pm) = PackageManager::detect() {
+            let freshness = pm.check_freshness();
+            let mut pm_item = match freshness.level {
+                FreshnessLevel::Fresh => DiagnosticItem::ok("Package Manager & Cache"),
+                FreshnessLevel::Stale => {
+                    let mut item = DiagnosticItem::warning("Package Manager & Cache", &freshness.message);
+                    if let Some(cmd) = freshness.recommended_command {
+                        item.recommendations.push(Recommendation::with_command(
+                            "Update package manager metadata/cache",
+                            cmd,
+                        ));
+                    }
+                    item
+                }
+                FreshnessLevel::Unknown => DiagnosticItem::ok("Package Manager & Cache"),
+            };
+            pm_item.details.push(format!("Active Package Manager: {}", pm.name()));
+            pm_item.details.push(freshness.message);
+            result.items.push(pm_item);
+        } else {
+            let mut pm_item = DiagnosticItem::info("Package Manager & Cache");
+            pm_item.details.push("No recognized system package manager detected".to_string());
+            result.items.push(pm_item);
+        }
 
         result
     }
