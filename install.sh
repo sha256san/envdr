@@ -4,7 +4,6 @@ set -euo pipefail
 
 REPO="sha256san/envdr"
 VERSION="0.3.0"
-INSTALL_DIR="/usr/local/bin"
 
 echo "🩺  envdoctor  -  Developer Environment Diagnostic Tool Installer"
 echo "────────────────────────────────────────────────────────────"
@@ -23,9 +22,15 @@ RAW_OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 case "$RAW_OS" in
     linux)
         OS="linux"
+        INSTALL_DIR="/usr/local/bin"
         ;;
     darwin)
         OS="darwin"
+        if [ -d "/opt/homebrew/bin" ] && [[ ":$PATH:" == *":/opt/homebrew/bin:"* ]]; then
+            INSTALL_DIR="/opt/homebrew/bin"
+        else
+            INSTALL_DIR="/usr/local/bin"
+        fi
         ;;
     *)
         echo "❌ Unsupported OS: ${RAW_OS}. Please install using Cargo: cargo install --git https://github.com/${REPO}"
@@ -46,8 +51,9 @@ case "$RAW_ARCH" in
         DARWIN_ARCH="arm64"
         ;;
     *)
-        echo "❌ Architecture ${RAW_ARCH} is not pre-compiled. Build with: cargo install --git https://github.com/${REPO}"
-        exit 1
+        ARCH="${RAW_ARCH}"
+        DEB_ARCH="unknown"
+        DARWIN_ARCH="${RAW_ARCH}"
         ;;
 esac
 
@@ -60,7 +66,7 @@ if [ "$OS" = "linux" ] && command -v dpkg >/dev/null 2>&1; then
         ${SUDO} dpkg -P envdoctor envdr 2>/dev/null || ${SUDO} dpkg -r envdoctor envdr 2>/dev/null || true
     fi
 fi
-${SUDO} rm -f "${INSTALL_DIR}/envdoctor" "${INSTALL_DIR}/envdr" "/usr/bin/envdoctor" "/usr/bin/envdr" "${HOME}/.local/bin/envdoctor" "${HOME}/.local/bin/envdr" 2>/dev/null || true
+${SUDO} rm -f "${INSTALL_DIR}/envdoctor" "${INSTALL_DIR}/envdr" "/usr/local/bin/envdoctor" "/usr/local/bin/envdr" "/usr/bin/envdoctor" "/usr/bin/envdr" "${HOME}/.local/bin/envdoctor" "${HOME}/.local/bin/envdr" 2>/dev/null || true
 
 # 4. macOS (Apple Silicon / Intel) のインストール処理
 if [ "$OS" = "darwin" ]; then
@@ -68,11 +74,6 @@ if [ "$OS" = "darwin" ]; then
         echo "🍎 Apple Silicon (M1/M2/M3/M4) detected."
     else
         echo "🍎 Intel Mac detected."
-    fi
-
-    # Homebrew が利用可能な場合は Homebrew でのインストール案内
-    if command -v brew >/dev/null 2>&1; then
-        echo "🍺 Homebrew detected! You can also install via: brew install sha256san/tap/envdoctor"
     fi
 
     TMP_TAR=$(mktemp /tmp/envdr_XXXXXX.tar.gz)
@@ -85,6 +86,7 @@ if [ "$OS" = "darwin" ]; then
         tar -xzf "${TMP_TAR}" -C "${TMP_EXTRACT}"
 
         echo "📦 Copying binaries to ${INSTALL_DIR}..."
+        ${SUDO} mkdir -p "${INSTALL_DIR}"
         ${SUDO} cp "${TMP_EXTRACT}"/*/envdoctor "${INSTALL_DIR}/"
         ${SUDO} cp "${TMP_EXTRACT}"/*/envdr "${INSTALL_DIR}/"
         ${SUDO} chmod 755 "${INSTALL_DIR}/envdoctor" "${INSTALL_DIR}/envdr"
@@ -98,7 +100,7 @@ if [ "$OS" = "darwin" ]; then
 fi
 
 # 5. Linux (x86_64 / ARM64) の Debian パッケージインストール
-if [ "$OS" = "linux" ] && command -v dpkg >/dev/null 2>&1; then
+if [ "$OS" = "linux" ] && command -v dpkg >/dev/null 2>&1 && [ "${DEB_ARCH}" != "unknown" ]; then
     TMP_DEB=$(mktemp /tmp/envdoctor_XXXXXX.deb)
     DEB_URL="https://github.com/${REPO}/releases/download/v${VERSION}/envdoctor_${VERSION}_${DEB_ARCH}.deb"
     DEB_FALLBACK="https://raw.githubusercontent.com/${REPO}/main/docs/apt/pool/main/e/envdoctor/envdoctor_${VERSION}_${DEB_ARCH}.deb"
@@ -127,6 +129,7 @@ if [ "$OS" = "linux" ]; then
         tar -xzf "${TMP_TAR}" -C "${TMP_EXTRACT}"
 
         echo "📦 Copying binaries to ${INSTALL_DIR}..."
+        ${SUDO} mkdir -p "${INSTALL_DIR}"
         ${SUDO} cp "${TMP_EXTRACT}"/*/envdoctor "${INSTALL_DIR}/"
         ${SUDO} cp "${TMP_EXTRACT}"/*/envdr "${INSTALL_DIR}/"
         ${SUDO} chmod 755 "${INSTALL_DIR}/envdoctor" "${INSTALL_DIR}/envdr"
@@ -139,7 +142,36 @@ if [ "$OS" = "linux" ]; then
     fi
 fi
 
-echo "❌ Failed to download pre-compiled release from GitHub."
-echo "💡 You can build directly with Cargo:"
+# 7. 自動フォールバック: Cargo によるソースコードからの自動ビルド & インストール
+if command -v cargo >/dev/null 2>&1; then
+    echo "⚙️  Pre-compiled package not found. Building directly from source with Cargo..."
+    cargo install --git "https://github.com/${REPO}" --force
+    CARGO_BIN_DIR="${HOME}/.cargo/bin"
+    if [ -f "${CARGO_BIN_DIR}/envdr" ]; then
+        ${SUDO} mkdir -p "${INSTALL_DIR}"
+        ${SUDO} ln -sf "${CARGO_BIN_DIR}/envdr" "${INSTALL_DIR}/envdr" 2>/dev/null || true
+        ${SUDO} ln -sf "${CARGO_BIN_DIR}/envdoctor" "${INSTALL_DIR}/envdoctor" 2>/dev/null || true
+    fi
+    echo "✨ Installation complete via Cargo! You can now run 'envdr' or 'envdoctor'."
+    hash -r 2>/dev/null || true
+    envdr --version || true
+    exit 0
+fi
+
+# 8. 自動フォールバック: Homebrew による自動ビルド & インストール
+if command -v brew >/dev/null 2>&1; then
+    echo "🍺 Homebrew detected! Installing via Homebrew..."
+    brew install --build-from-source "https://raw.githubusercontent.com/${REPO}/main/Formula/envdoctor.rb" 2>/dev/null || true
+    if command -v envdr >/dev/null 2>&1 || command -v envdoctor >/dev/null 2>&1; then
+        echo "✨ Installation complete via Homebrew! You can now run 'envdr' or 'envdoctor'."
+        hash -r 2>/dev/null || true
+        envdr --version || true
+        exit 0
+    fi
+fi
+
+echo "❌ Failed to download pre-compiled release from GitHub and build tools were not found."
+echo "💡 To install Rust & build with Cargo, run:"
+echo "   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
 echo "   cargo install --git https://github.com/${REPO}"
 exit 1
