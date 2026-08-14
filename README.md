@@ -237,25 +237,64 @@ envdoctor doctor --format markdown -o report.md
 
 ```text
 envdoctor/
-├── CHANGELOG.md   # Release notes
-├── Cargo.toml     # Package configuration & dependencies
-├── LICENSE        # MIT License
-├── install.sh     # Multi-platform installer script
-├── Dockerfile     # Container verification configuration
-├── scripts/       # Packaging and testing scripts
-│   ├── package.sh
-│   ├── test-docker.sh
-│   └── create-apt-repo.sh
+├── Cargo.toml                  # Package configuration & dependencies
+├── Cargo.lock                  # Dependency lockfile
+├── CHANGELOG.md                # Release notes & version history
+├── LICENSE                     # MIT License
+├── README.md                   # Project documentation (English & Japanese)
+├── install.sh                  # Multi-platform automated installer (Linux & macOS)
+├── Dockerfile                  # Container environment build & testing
+├── .dockerignore               # Docker build context optimization
+├── docs/                       # Documentation and APT repository hosting
+│   └── apt/                    # Static APT repository (dists, pool)
+├── scripts/                    # Automation and packaging scripts
+│   ├── package.sh              # Multi-architecture release packager (.tar.gz & .deb)
+│   ├── test-docker.sh          # Container integration test suite
+│   └── create-apt-repo.sh      # APT repository generation script
 └── src/
-    ├── lib.rs     # Core engine library
-    ├── main.rs    # envdoctor CLI entrypoint
-    ├── bin/       # envdr alias entrypoint
-    ├── cli/       # Command line parsing (clap)
-    ├── core/      # Diagnostic types, severity, and AutoFixer
-    ├── system/    # OS, hardware, and package manager detection
-    ├── checkers/  # Language and tool diagnostic modules
-    ├── output/    # Terminal, JSON, and Markdown formatters
-    └── utils/     # Command execution, path analysis, and sanitization
+    ├── main.rs                 # envdoctor CLI primary binary entrypoint
+    ├── lib.rs                  # Core diagnostic orchestration library
+    ├── bin/
+    │   └── envdr.rs            # envdr short-alias binary entrypoint
+    ├── cli/
+    │   └── mod.rs              # Command line argument & flag parsing (clap)
+    ├── core/
+    │   ├── mod.rs              # Diagnostic types, severity, and status models
+    │   └── fixer.rs            # AutoFixer action planning and safe execution
+    ├── system/
+    │   ├── mod.rs              # Hardware and operating system inspection
+    │   └── package_manager.rs  # Package manager detection & cache freshness
+    ├── checkers/               # Diagnostic checker implementations
+    │   ├── mod.rs              # CheckerRegistry and target routing
+    │   ├── system.rs           # System and hardware diagnostic checker
+    │   ├── shell.rs            # Shell configuration file checker (.bashrc, .zshrc)
+    │   ├── python.rs           # Python & virtual environment checker
+    │   ├── rust.rs             # Rust toolchain checker
+    │   ├── go.rs               # Go toolchain & GOPATH checker
+    │   ├── node.rs             # Node.js, npm, yarn, pnpm checker
+    │   ├── cpp.rs              # C/C++ compiler and build system checker
+    │   ├── java.rs             # Java, JDK, Maven, Gradle checker
+    │   ├── ruby.rs             # Ruby, gem, bundler checker
+    │   ├── php.rs              # PHP & Composer checker
+    │   ├── dotnet.rs           # .NET SDK & runtime checker
+    │   ├── swift.rs            # Swift toolchain checker
+    │   ├── dart.rs             # Dart & Flutter SDK checker
+    │   ├── zig.rs              # Zig compiler checker
+    │   ├── lua.rs              # Lua & Luarocks checker
+    │   ├── generic.rs          # Declarative language checker builder
+    │   ├── git.rs              # Git configuration & SSH key checker
+    │   ├── docker.rs           # Docker CLI, daemon, and compose checker
+    │   └── gpu.rs              # GPU (NVIDIA CUDA / AMD ROCm) checker
+    ├── output/                 # Report formatters
+    │   ├── mod.rs
+    │   ├── terminal.rs         # Rich terminal output formatter
+    │   ├── json.rs             # Structured JSON formatter
+    │   └── markdown.rs         # Markdown report formatter
+    └── utils/                  # Shared helper modules
+        ├── mod.rs
+        ├── command.rs          # Safe command execution helper
+        ├── path.rs             # PATH analysis, symlink & shim verification
+        └── mask.rs             # Sensitive credential masking filter
 ```
 
 ---
@@ -522,25 +561,64 @@ envdoctor doctor --format markdown -o report.md
 
 ```text
 envdoctor/
-├── CHANGELOG.md   # リリース変更履歴
-├── Cargo.toml     # パッケージ設定 & 依存関係
-├── LICENSE        # MIT ライセンス
-├── install.sh     # ワンライナー自動インストーラー
-├── Dockerfile     # コンテナ環境テスト設定
-├── scripts/       # ビルド・パッケージ作成スクリプト
-│   ├── package.sh
-│   ├── test-docker.sh
-│   └── create-apt-repo.sh
+├── Cargo.toml                  # パッケージ設定 & 依存関係
+├── Cargo.lock                  # 依存関係ロックファイル
+├── CHANGELOG.md                # リリース変更履歴
+├── LICENSE                     # MIT ライセンス
+├── README.md                   # プロジェクトドキュメント (日英バイリンガル)
+├── install.sh                  # マルチプラットフォーム自動インストーラー (Linux / macOS)
+├── Dockerfile                  # コンテナ環境テスト・検証設定
+├── .dockerignore               # Docker ビルドコンテキスト最適化
+├── docs/                       # ドキュメント & APT リポジトリホスティング
+│   └── apt/                    # 静的 APT リポジトリ (dists, pool)
+├── scripts/                    # 自動化・パッケージングスクリプト
+│   ├── package.sh              # マルチアーキテクチャパッケージャー (.tar.gz & .deb)
+│   ├── test-docker.sh          # コンテナ統合自動テストスイート
+│   └── create-apt-repo.sh      # APT リポジトリ自動生成スクリプト
 └── src/
-    ├── lib.rs     # 診断エンジンのコアライブラリ
-    ├── main.rs    # envdoctor CLI エントリポイント
-    ├── bin/       # envdr 短縮コマンドエントリポイント
-    ├── cli/       # コマンドライン引数・フラグ定義 (clap)
-    ├── core/      # 診断エンジン・ステータス型定義・AutoFixer
-    ├── system/    # OS・ハードウェア・パッケージマネージャー自動検出
-    ├── checkers/  # 各環境の診断モジュール (多言語・ツール)
-    ├── output/    # ターミナル / JSON / Markdown 出力フォーマッター
-    └── utils/     # コマンド実行・パス解析・機密情報マスキング
+    ├── main.rs                 # envdoctor CLI メインバイナリエントリポイント
+    ├── lib.rs                  # コア診断エンジンオーケストレーションライブラリ
+    ├── bin/
+    │   └── envdr.rs            # envdr 短縮コマンドエントリポイント
+    ├── cli/
+    │   └── mod.rs              # コマンドライン引数・フラグ定義 (clap)
+    ├── core/
+    │   ├── mod.rs              # 診断モデル、ステータス、重要度定義
+    │   └── fixer.rs            # AutoFixer 自動修復プラン生成 & 実行
+    ├── system/
+    │   ├── mod.rs              # OS・ハードウェアリソース検査
+    │   └── package_manager.rs  # パッケージマネージャー判定 & キャッシュ鮮度診断
+    ├── checkers/               # 各種診断モジュール実装
+    │   ├── mod.rs              # CheckerRegistry & 診断ターゲット振り分け
+    │   ├── system.rs           # システム環境・ハードウェア診断チェッカー
+    │   ├── shell.rs            # シェル設定ファイル診断 (.bashrc, .zshrc)
+    │   ├── python.rs           # Python & 仮想環境チェッカー
+    │   ├── rust.rs             # Rust ツールチェーンチェッカー
+    │   ├── go.rs               # Go ツールチェーン & GOPATH チェッカー
+    │   ├── node.rs             # Node.js, npm, yarn, pnpm チェッカー
+    │   ├── cpp.rs              # C/C++ コンパイラ & ビルドシステムチェッカー
+    │   ├── java.rs             # Java, JDK, Maven, Gradle チェッカー
+    │   ├── ruby.rs             # Ruby, gem, bundler チェッカー
+    │   ├── php.rs              # PHP & Composer チェッカー
+    │   ├── dotnet.rs           # .NET SDK & ランタイムチェッカー
+    │   ├── swift.rs            # Swift ツールチェーンチェッカー
+    │   ├── dart.rs             # Dart & Flutter SDK チェッカー
+    │   ├── zig.rs              # Zig コンパイラチェッカー
+    │   ├── lua.rs              # Lua & Luarocks チェッカー
+    │   ├── generic.rs          # 宣言的汎用言語チェッカービルダー
+    │   ├── git.rs              # Git 設定 & SSH 鍵チェッカー
+    │   ├── docker.rs           # Docker CLI, デーモン, Compose チェッカー
+    │   └── gpu.rs              # GPU (NVIDIA CUDA / AMD ROCm) チェッカー
+    ├── output/                 # 出力フォーマッター
+    │   ├── mod.rs
+    │   ├── terminal.rs         # ターミナル用カラー出力
+    │   ├── json.rs             # 構造化 JSON 出力
+    │   └── markdown.rs         # Markdown レポート出力
+    └── utils/                  # 共通ユーティリティ
+        ├── mod.rs
+        ├── command.rs          # 安全な外部コマンド実行
+        ├── path.rs             # PATH 解析・シンボリックリンク/シム検証
+        └── mask.rs             # 機密情報 (トークン/APIキー) マスキング
 ```
 
 ---
