@@ -104,15 +104,21 @@ impl Checker for GpuChecker {
                 let has_video = groups.contains("video");
                 if !has_render && !has_video {
                     rocm_item.status = Status::Warning;
-                    rocm_item.issues.push(Issue::new(
+                    let mut issue = Issue::new(
                         Status::Warning,
                         "Current user is not in 'render' or 'video' groups for ROCm GPU access",
-                    ));
-                    rocm_item.recommendations.push(Recommendation::full(
+                    );
+                    issue.cause = Some("Active user lacks UNIX group privileges for /dev/kfd and GPU device nodes".into());
+                    issue.impact = Some("ROCm compute applications and PyTorch/TensorFlow cannot execute on AMD GPU hardware".into());
+                    rocm_item.issues.push(issue);
+
+                    let rec = Recommendation::full(
                         "Add user to render and video groups",
                         "sudo usermod -aG render,video $USER && newgrp render",
                         "Enables direct GPU memory and hardware queue access.",
-                    ));
+                    )
+                    .with_verification("rocm-smi");
+                    rocm_item.recommendations.push(rec);
                 } else {
                     rocm_item.details.push("User has proper GPU group permissions (render/video)".to_string());
                 }

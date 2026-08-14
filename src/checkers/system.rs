@@ -46,10 +46,13 @@ impl Checker for SystemChecker {
         ));
         if sys.total_memory_mb < 2048 {
             hw_item.status = Status::Warning;
-            hw_item.issues.push(Issue::new(
+            let mut issue = Issue::new(
                 Status::Warning,
                 "Total system memory is less than 2GB, which may cause build failures",
-            ));
+            );
+            issue.cause = Some("System is allocated limited RAM (< 2048MB)".into());
+            issue.impact = Some("Heavy compilation (e.g., Rust/C++) may trigger Out-Of-Memory (OOM) killer".into());
+            hw_item.issues.push(issue);
         }
         result.items.push(hw_item);
 
@@ -73,25 +76,35 @@ impl Checker for SystemChecker {
 
         if !non_existent_paths.is_empty() {
             path_item.status = Status::Warning;
-            path_item.issues.push(Issue::with_detail(
+            for p in &non_existent_paths {
+                path_item.details.push(format!("Non-existent path: {}", p));
+            }
+            let mut issue = Issue::new(
                 Status::Warning,
                 format!("Found {} non-existent path(s) in PATH", non_existent_paths.len()),
-                non_existent_paths.join(", "),
-            ));
-            path_item.recommendations.push(Recommendation::new(
-                "Remove non-existent directories from your PATH in ~/.bashrc or ~/.zshrc",
-            ));
+            );
+            issue.cause = Some("Directories specified in PATH do not exist on the filesystem".into());
+            issue.impact = Some("Commands installed in these directories may fail to execute or produce confusing 'command not found' errors".into());
+            path_item.issues.push(issue);
+
+            let rec = Recommendation::new("Remove non-existent directories from your PATH in ~/.bashrc or ~/.zshrc")
+                .with_verification("echo $PATH");
+            path_item.recommendations.push(rec);
         }
 
         if !duplicate_paths.is_empty() {
             if path_item.status == Status::Ok {
                 path_item.status = Status::Info;
             }
-            path_item.issues.push(Issue::with_detail(
+            for p in &duplicate_paths {
+                path_item.details.push(format!("Duplicate path: {}", p));
+            }
+            let mut issue = Issue::new(
                 Status::Info,
                 format!("Found {} duplicate path(s) in PATH", duplicate_paths.len()),
-                duplicate_paths.join(", "),
-            ));
+            );
+            issue.impact = Some("Redundant search paths slightly increase executable resolution time".into());
+            path_item.issues.push(issue);
         }
 
         result.items.push(path_item);
@@ -102,12 +115,17 @@ impl Checker for SystemChecker {
             let mut pm_item = match freshness.level {
                 FreshnessLevel::Fresh => DiagnosticItem::ok("Package Manager & Cache"),
                 FreshnessLevel::Stale => {
-                    let mut item = DiagnosticItem::warning("Package Manager & Cache", &freshness.message);
+                    let mut item = DiagnosticItem::ok("Package Manager & Cache");
+                    item.status = Status::Warning;
+                    let mut issue = Issue::new(Status::Warning, &freshness.message);
+                    issue.cause = Some(format!("Package index for {} has not been updated recently", pm.name()));
+                    issue.impact = Some("Installing packages may fetch outdated versions or fail with 404 Not Found errors".into());
+                    item.issues.push(issue);
+
                     if let Some(cmd) = freshness.recommended_command {
-                        item.recommendations.push(Recommendation::with_command(
-                            "Update package manager metadata/cache",
-                            cmd,
-                        ));
+                        let rec = Recommendation::with_command("Update package manager metadata cache", cmd.clone())
+                            .with_verification(cmd);
+                        item.recommendations.push(rec);
                     }
                     item
                 }

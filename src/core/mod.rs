@@ -36,6 +36,10 @@ pub struct Issue {
     pub message: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub detail: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cause: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub impact: Option<String>,
 }
 
 impl Issue {
@@ -44,6 +48,8 @@ impl Issue {
             status,
             message: message.into(),
             detail: None,
+            cause: None,
+            impact: None,
         }
     }
 
@@ -52,6 +58,34 @@ impl Issue {
             status,
             message: message.into(),
             detail: Some(detail.into()),
+            cause: None,
+            impact: None,
+        }
+    }
+
+    pub fn with_cause(mut self, cause: impl Into<String>) -> Self {
+        self.cause = Some(cause.into());
+        self
+    }
+
+    pub fn with_impact(mut self, impact: impl Into<String>) -> Self {
+        self.impact = Some(impact.into());
+        self
+    }
+
+    pub fn full(
+        status: Status,
+        message: impl Into<String>,
+        detail: Option<String>,
+        cause: Option<String>,
+        impact: Option<String>,
+    ) -> Self {
+        Self {
+            status,
+            message: message.into(),
+            detail,
+            cause,
+            impact,
         }
     }
 }
@@ -64,6 +98,8 @@ pub struct Recommendation {
     pub command: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub explanation: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub verification: Option<String>,
 }
 
 impl Recommendation {
@@ -72,6 +108,7 @@ impl Recommendation {
             action: action.into(),
             command: None,
             explanation: None,
+            verification: None,
         }
     }
 
@@ -80,6 +117,7 @@ impl Recommendation {
             action: action.into(),
             command: Some(command.into()),
             explanation: None,
+            verification: None,
         }
     }
 
@@ -88,6 +126,26 @@ impl Recommendation {
             action: action.into(),
             command: Some(command.into()),
             explanation: Some(explanation.into()),
+            verification: None,
+        }
+    }
+
+    pub fn with_verification(mut self, verification: impl Into<String>) -> Self {
+        self.verification = Some(verification.into());
+        self
+    }
+
+    pub fn complete(
+        action: impl Into<String>,
+        command: Option<String>,
+        explanation: Option<String>,
+        verification: Option<String>,
+    ) -> Self {
+        Self {
+            action: action.into(),
+            command,
+            explanation,
+            verification,
         }
     }
 }
@@ -223,6 +281,21 @@ impl DiagnosticSummary {
     }
 }
 
+/// サマリー表示用の個別 Issue 情報
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SummaryIssue {
+    pub category: String,
+    pub item_name: String,
+    pub status: Status,
+    pub message: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cause: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub impact: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fix_command: Option<String>,
+}
+
 /// 完全な診断レポート
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FullDiagnosticReport {
@@ -231,6 +304,32 @@ pub struct FullDiagnosticReport {
     pub system: crate::system::SystemReport,
     pub summary: DiagnosticSummary,
     pub results: Vec<CategoryResult>,
+}
+
+impl FullDiagnosticReport {
+    /// 診断レポート全体から全 Issue を抽出
+    pub fn collect_issues(&self) -> Vec<SummaryIssue> {
+        let mut issues = Vec::new();
+        for cat in &self.results {
+            for item in &cat.items {
+                let first_cmd = item.recommendations.iter().find_map(|r| r.command.clone());
+                for issue in &item.issues {
+                    if !issue.status.is_ok() {
+                        issues.push(SummaryIssue {
+                            category: cat.title.clone(),
+                            item_name: item.name.clone(),
+                            status: issue.status,
+                            message: issue.message.clone(),
+                            cause: issue.cause.clone(),
+                            impact: issue.impact.clone(),
+                            fix_command: first_cmd.clone(),
+                        });
+                    }
+                }
+            }
+        }
+        issues
+    }
 }
 
 /// チェッカーの種別

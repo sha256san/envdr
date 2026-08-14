@@ -70,14 +70,26 @@ impl Checker for GoChecker {
                 }
 
                 if !bin_in_path {
-                    let mut path_warn = DiagnosticItem::warning(
-                        "Go Bin Directory ($GOPATH/bin)",
-                        format!("{} is not in your PATH. Binaries installed with 'go install' won't be accessible directly.", bin_dir.display()),
+                    let mut path_warn = DiagnosticItem::ok("Go Bin Directory ($GOPATH/bin)");
+                    path_warn.status = crate::core::Status::Warning;
+                    path_warn.details.push(format!("GOPATH: {}", gp));
+                    path_warn.details.push(format!("Binary directory: {}", bin_dir.display()));
+
+                    let mut issue = crate::core::Issue::new(
+                        crate::core::Status::Warning,
+                        format!("{} is not in your PATH", bin_dir.display()),
                     );
-                    path_warn.recommendations.push(Recommendation::with_command(
-                        "Add GOPATH/bin to your PATH in shell config",
+                    issue.cause = Some("Go binary installation path is omitted from system PATH configuration".into());
+                    issue.impact = Some("Binaries installed via 'go install' cannot be executed directly from your terminal".into());
+                    path_warn.issues.push(issue);
+
+                    let rec = Recommendation::with_command(
+                        "Add GOPATH/bin to your PATH in your shell configuration (~/.bashrc or ~/.zshrc)",
                         "export PATH=\"$(go env GOPATH)/bin:$PATH\"",
-                    ));
+                    )
+                    .with_verification("echo $PATH | grep -q 'go/bin'");
+                    path_warn.recommendations.push(rec);
+
                     result.items.push(path_warn);
                 }
             }

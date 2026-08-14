@@ -59,7 +59,14 @@ impl Checker for CppChecker {
             comp_item.details = compilers;
         } else {
             comp_item.status = Status::Warning;
-            comp_item.details.push("No C/C++ compiler found on PATH (gcc/clang)".to_string());
+            let mut issue = crate::core::Issue::new(
+                Status::Warning,
+                "No C/C++ compiler found on PATH (gcc/clang)",
+            );
+            issue.cause = Some("C/C++ compiler toolchain is not installed on the system".into());
+            issue.impact = Some("Native C/C++ compilation and native C extensions for Python/Node/Rust will fail to build".into());
+            comp_item.issues.push(issue);
+
             let install_cmd = crate::system::package_manager::get_install_command("build-essential")
                 .unwrap_or_else(|| "sudo apt install build-essential".to_string());
             comp_item.recommendations.push(Recommendation::with_command(

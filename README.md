@@ -200,19 +200,46 @@ envdr fix --apply
   OK   System & Environment
    ✔ OS & Architecture (Ubuntu 24.04 (x86_64))
    ✔ Hardware Resources
-   ✔ Package Manager & Cache (APT cache is up-to-date)
+   ▲ PATH Environment Variable
+     • Total entries in PATH: 39
+     • Non-existent path: /snap/bin
+     Warning: Found 1 non-existent path(s) in PATH
+       Cause: Directories specified in PATH do not exist on the filesystem
+       Impact: Commands installed in these directories may fail to execute
+     💡 Recommendation: Remove non-existent directories from your PATH in ~/.bashrc or ~/.zshrc
+        Verify: $ echo $PATH
+   ✔ Package Manager & Cache (APT package cache is up-to-date)
 
-  OK   Python Environment
-   ✔ Python Interpreter (Python 3.12.3)
-   ✔ Pip Package Manager (pip 24.0)
+  OK   Shell & Configuration
+   ✔ Login Shell (GNU bash, version 5.2.21)
+   ✔ Configuration: ~/.bashrc
 
-  WARN  Git & Version Control
-   ✔ Git CLI (git version 2.43.0)
-   ▲ Git Author Configuration
-     Warning: Git user.name is not set globally
-     Warning: Git user.email is not set globally
-     Recommendation: Set Git global identity
-        $ git config --global user.name "Your Name" && git config --global user.email "you@example.com"
+ FAIL  Docker & Containerization
+   ✔ Docker CLI (Docker version 27.1.1)
+   ✖ Docker Daemon & Permissions
+     Error: Current user does not have permission to communicate with Docker daemon socket (/var/run/docker.sock)
+       Cause: The active user does not belong to the 'docker' group
+       Impact: Docker CLI commands cannot manage containers without root / sudo privileges
+     💡 Recommendation: Add current user to 'docker' group and activate group membership
+        $ sudo usermod -aG docker $USER && newgrp docker
+        Verify: $ docker ps
+
+ ────────────────────────────────────────────────────────────
+ Summary
+   ✔ 18 checks passed
+   ▲ 1 warnings
+   ✖ 1 errors
+   ℹ 2 informational
+
+ Issues:
+   1. [WARN] System & Environment: Found 1 non-existent path(s) in PATH
+      Impact: Commands installed in these directories may fail to execute
+   2. [ERROR] Docker & Containerization: Current user does not have permission to communicate with Docker daemon socket (/var/run/docker.sock)
+      Impact: Docker CLI commands cannot manage containers without root / sudo privileges
+      Fix: $ sudo usermod -aG docker $USER && newgrp docker
+
+ Run `envdr fix` to preview or apply available fixes.
+ Run `envdr --help` for more options.
 ```
 
 ### JSON Output (`--format json`)
@@ -524,19 +551,46 @@ envdr fix --apply
   OK   System & Environment
    ✔ OS & Architecture (Ubuntu 24.04 (x86_64))
    ✔ Hardware Resources
-   ✔ Package Manager & Cache (APT cache is up-to-date)
+   ▲ PATH Environment Variable
+     • Total entries in PATH: 39
+     • Non-existent path: /snap/bin
+     Warning: Found 1 non-existent path(s) in PATH
+       Cause: Directories specified in PATH do not exist on the filesystem
+       Impact: Commands installed in these directories may fail to execute
+     💡 Recommendation: Remove non-existent directories from your PATH in ~/.bashrc or ~/.zshrc
+        Verify: $ echo $PATH
+   ✔ Package Manager & Cache (APT package cache is up-to-date)
 
-  OK   Python Environment
-   ✔ Python Interpreter (Python 3.12.3)
-   ✔ Pip Package Manager (pip 24.0)
+  OK   Shell & Configuration
+   ✔ Login Shell (GNU bash, version 5.2.21)
+   ✔ Configuration: ~/.bashrc
 
-  WARN  Git & Version Control
-   ✔ Git CLI (git version 2.43.0)
-   ▲ Git Author Configuration
-     Warning: Git user.name is not set globally
-     Warning: Git user.email is not set globally
-     💡 Recommendation: Set Git global identity
-        $ git config --global user.name "Your Name" && git config --global user.email "you@example.com"
+ FAIL  Docker & Containerization
+   ✔ Docker CLI (Docker version 27.1.1)
+   ✖ Docker Daemon & Permissions
+     Error: Current user does not have permission to communicate with Docker daemon socket (/var/run/docker.sock)
+       Cause: The active user does not belong to the 'docker' group
+       Impact: Docker CLI commands cannot manage containers without root / sudo privileges
+     💡 Recommendation: Add current user to 'docker' group and activate group membership
+        $ sudo usermod -aG docker $USER && newgrp docker
+        Verify: $ docker ps
+
+ ────────────────────────────────────────────────────────────
+ Summary
+   ✔ 18 checks passed
+   ▲ 1 warnings
+   ✖ 1 errors
+   ℹ 2 informational
+
+ Issues:
+   1. [WARN] System & Environment: Found 1 non-existent path(s) in PATH
+      Impact: Commands installed in these directories may fail to execute
+   2. [ERROR] Docker & Containerization: Current user does not have permission to communicate with Docker daemon socket (/var/run/docker.sock)
+      Impact: Docker CLI commands cannot manage containers without root / sudo privileges
+      Fix: $ sudo usermod -aG docker $USER && newgrp docker
+
+ Run `envdr fix` to preview or apply available fixes.
+ Run `envdr --help` for more options.
 ```
 
 ### JSON 出力 (`--format json`)

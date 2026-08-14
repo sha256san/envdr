@@ -49,29 +49,44 @@ impl Checker for DockerChecker {
                 Some(out) => {
                     daemon_item.status = Status::Error;
                     if out.stderr.contains("permission denied") || out.stderr.contains("Got permission denied") {
-                        daemon_item.issues.push(Issue::new(
+                        let mut issue = Issue::new(
                             Status::Error,
                             "Current user does not have permission to communicate with Docker daemon socket (/var/run/docker.sock)",
-                        ));
-                        daemon_item.recommendations.push(Recommendation::full(
-                            "Add current user to 'docker' group",
+                        );
+                        issue.cause = Some("The active user does not belong to the 'docker' group".into());
+                        issue.impact = Some("Docker CLI commands cannot manage containers without root / sudo privileges".into());
+                        daemon_item.issues.push(issue);
+
+                        let rec = Recommendation::full(
+                            "Add current user to 'docker' group and activate group membership",
                             "sudo usermod -aG docker $USER && newgrp docker",
                             "Enables non-root access to the Docker daemon.",
-                        ));
+                        )
+                        .with_verification("docker ps");
+                        daemon_item.recommendations.push(rec);
                     } else if out.stderr.contains("Is the docker daemon running") {
-                        daemon_item.issues.push(Issue::new(
+                        let mut issue = Issue::new(
                             Status::Error,
-                            "Docker daemon is not running",
-                        ));
-                        daemon_item.recommendations.push(Recommendation::with_command(
+                            "Docker daemon service is not running",
+                        );
+                        issue.cause = Some("The docker background service is stopped or inactive".into());
+                        issue.impact = Some("Containers cannot be started or managed".into());
+                        daemon_item.issues.push(issue);
+
+                        let rec = Recommendation::with_command(
                             "Start Docker daemon service",
                             "sudo systemctl start docker",
-                        ));
+                        )
+                        .with_verification("docker ps");
+                        daemon_item.recommendations.push(rec);
                     } else {
-                        daemon_item.issues.push(Issue::new(
+                        let mut issue = Issue::new(
                             Status::Error,
                             format!("Docker daemon check failed: {}", out.stderr),
-                        ));
+                        );
+                        issue.cause = Some("Docker daemon returned an unexpected error response".into());
+                        issue.impact = Some("Docker daemon operations are unavailable".into());
+                        daemon_item.issues.push(issue);
                     }
                 }
                 None => {

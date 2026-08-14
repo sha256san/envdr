@@ -176,10 +176,15 @@ impl Checker for GenericLanguageChecker {
             }
         } else {
             let primary_name = self.primary_executables.first().copied().unwrap_or(self.id);
-            let mut item = DiagnosticItem::error(
-                format!("{} Runtime / Compiler", self.title),
+            let mut item = DiagnosticItem::ok(format!("{} Runtime / Compiler", self.title));
+            item.status = crate::core::Status::Error;
+            let mut issue = crate::core::Issue::new(
+                crate::core::Status::Error,
                 format!("'{}' executable was not found on PATH", primary_name),
             );
+            issue.cause = Some(format!("{} compiler / runtime binary is not installed or not in PATH", self.title));
+            issue.impact = Some(format!("{} source files and projects cannot be compiled or executed", self.title));
+            item.issues.push(issue);
 
             if let Some(pkg) = self.install_pkg_name {
                 if let Some(cmd) = crate::system::package_manager::get_install_command(pkg) {

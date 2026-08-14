@@ -1,4 +1,4 @@
-use crate::core::{CategoryResult, DiagnosticSummary, FullDiagnosticReport, Status};
+use crate::core::{CategoryResult, FullDiagnosticReport, Status};
 use colored::*;
 
 pub struct TerminalFormatter {
@@ -45,7 +45,7 @@ impl TerminalFormatter {
             self.print_category(category);
         }
 
-        self.print_summary(&report.summary);
+        self.print_summary(report);
     }
 
     pub fn print_category(&self, cat: &CategoryResult) {
@@ -104,7 +104,13 @@ impl TerminalFormatter {
                 };
                 println!("     {} {}", issue_prefix, issue.message);
                 if let Some(ref d) = issue.detail {
-                    println!("       {}", d.bright_black());
+                    println!("       {} {}", "Detail:".bright_black(), d.bright_black());
+                }
+                if let Some(ref cause) = issue.cause {
+                    println!("       {} {}", "Cause:".bright_black().bold(), cause.bright_black());
+                }
+                if let Some(ref impact) = issue.impact {
+                    println!("       {} {}", "Impact:".bright_yellow().bold(), impact);
                 }
             }
 
@@ -116,40 +122,57 @@ impl TerminalFormatter {
                 if let Some(ref exp) = rec.explanation {
                     println!("        {}", exp.bright_black());
                 }
+                if let Some(ref verif) = rec.verification {
+                    println!("        {} {}", "Verify: $".bright_cyan(), verif.bright_cyan());
+                }
             }
         }
         println!();
     }
 
-    pub fn print_summary(&self, summary: &DiagnosticSummary) {
+    pub fn print_summary(&self, report: &FullDiagnosticReport) {
+        let summary = &report.summary;
+        let issues = report.collect_issues();
+
         println!("{}", " ────────────────────────────────────────────────────────────".bright_black());
-        print!(" Summary: ");
+        println!(" {}", "Summary".bold().underline());
         if summary.ok > 0 {
-            print!("{}  ", format!("{} OK", summary.ok).green().bold());
-        }
-        if summary.info > 0 {
-            print!("{}  ", format!("{} Info", summary.info).blue().bold());
+            println!("   {} {}", "✔".green().bold(), format!("{} checks passed", summary.ok).green());
         }
         if summary.warning > 0 {
-            print!("{}  ", format!("{} Warnings", summary.warning).yellow().bold());
+            println!("   {} {}", "▲".yellow().bold(), format!("{} warnings", summary.warning).yellow());
         }
         if summary.error > 0 {
-            print!("{}  ", format!("{} Errors", summary.error).red().bold());
+            println!("   {} {}", "✖".red().bold(), format!("{} errors", summary.error).red());
         }
         if summary.critical > 0 {
-            print!("{}  ", format!("{} Critical", summary.critical).magenta().bold());
+            println!("   {} {}", "🔥".magenta().bold(), format!("{} critical issues", summary.critical).magenta());
         }
-        println!();
+        if summary.info > 0 {
+            println!("   {} {}", "ℹ".blue().bold(), format!("{} informational", summary.info).blue());
+        }
 
-        if summary.total_issues() == 0 {
-            println!("\n {}", "✨ All checks passed! Your environment looks healthy.".bright_green().bold());
+        if !issues.is_empty() {
+            println!("\n {}", "Issues:".bold().yellow());
+            for (idx, issue) in issues.iter().enumerate() {
+                let badge = match issue.status {
+                    Status::Critical => "[CRITICAL]".magenta().bold(),
+                    Status::Error => "[ERROR]".red().bold(),
+                    Status::Warning => "[WARN]".yellow().bold(),
+                    _ => "[INFO]".blue().bold(),
+                };
+                println!("   {}. {} {}: {}", idx + 1, badge, issue.category.bold(), issue.message);
+                if let Some(ref impact) = issue.impact {
+                    println!("      {} {}", "Impact:".bright_yellow(), impact.bright_black());
+                }
+                if let Some(ref fix) = issue.fix_command {
+                    println!("      {} {}", "Fix:".bright_green(), format!("$ {}", fix).bright_white());
+                }
+            }
+            println!("\n {}", "Run `envdr fix` to preview or apply available fixes.".bright_cyan());
+            println!(" {}", "Run `envdr --help` for more options.".bright_black());
         } else {
-            println!(
-                "\n {}",
-                format!("⚡ Found {} issue(s) needing attention. See recommendations above.", summary.total_issues())
-                    .bright_yellow()
-                    .bold()
-            );
+            println!("\n {}", "✨ All checks passed! Your environment looks healthy.".bright_green().bold());
         }
         println!();
     }

@@ -52,22 +52,30 @@ impl Checker for GitChecker {
                 _ => {
                     config_item.status = Status::Warning;
                     if user_name.is_none() {
-                        config_item.issues.push(Issue::new(
+                        let mut issue = Issue::new(
                             Status::Warning,
                             "Git user.name is not set globally",
-                        ));
+                        );
+                        issue.cause = Some("~/.gitconfig is missing the [user] name entry".into());
+                        issue.impact = Some("Commits will lack a recognizable author name or fallback to system username".into());
+                        config_item.issues.push(issue);
                     }
                     if user_email.is_none() {
-                        config_item.issues.push(Issue::new(
+                        let mut issue = Issue::new(
                             Status::Warning,
                             "Git user.email is not set globally",
-                        ));
+                        );
+                        issue.cause = Some("~/.gitconfig is missing the [user] email entry".into());
+                        issue.impact = Some("Commits will not be linked to your GitHub/GitLab user account".into());
+                        config_item.issues.push(issue);
                     }
-                    config_item.recommendations.push(Recommendation::full(
-                        "Set Git global identity",
+                    let rec = Recommendation::full(
+                        "Set Git global author identity",
                         "git config --global user.name \"Your Name\" && git config --global user.email \"you@example.com\"",
-                        "Required for commits to record proper authorship.",
-                    ));
+                        "Required for Git commits to record correct authorship information.",
+                    )
+                    .with_verification("git config --get user.name && git config --get user.email");
+                    config_item.recommendations.push(rec);
                 }
             }
             result.items.push(config_item);

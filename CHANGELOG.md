@@ -5,6 +5,28 @@
 
 ---
 
+## [Unreleased]
+
+### Added
+- **診断結果のUX構造改革 (Problem-Cause-Impact-Fix-Verify パイプライン)**:
+  - `Issue` モデルへの `cause`（根本原因）および `impact`（開発への影響）フィールドの追加
+  - `Recommendation` モデルへの `verification`（修正確認コマンド）フィールドの追加
+  - ターミナル出力、Markdown レポート、JSON レポートでの Cause / Impact / Verify 統合出力
+- **サマリー (Summary) の Numbered Issues リスト化**:
+  - 診断レポート末尾に検出された全問題を重要度タグ（`[CRITICAL]`, `[ERROR]`, `[WARN]`, `[INFO]`）付きで番号一覧表示
+  - 問題ごとの影響（Impact）および修正コマンド（Fix）のサマリー抜粋表示
+  - `envdr fix` による自動修復への誘導アクションフッターの追加
+- **各診断チェッカーの改善**:
+  - `SystemChecker`: 箇条書きによる無効 PATH 一覧およびコマンド実行失敗への影響説明
+  - `PythonChecker`: Python と pip の実行環境不一致を厳密検知し、`python -m pip` の修正コマンドと影響を提示
+  - `GoChecker`: `$GOPATH/bin` 未設定時の影響と PATH 追加コマンドの提示
+  - `DockerChecker`: ソケット権限不足・デーモン停止時の影響とグループ追加コマンド・検証コマンドの提示
+  - `GitChecker`: グローバルユーザー情報未設定時の影響と設定コマンドの提示
+  - `GpuChecker`: ROCm `/dev/kfd` アクセス権限不足時の影響とグループ追加コマンドの提示
+  - `ShellChecker`: 破壊的 PATH 上書き構文の検知とシステムコマンド利用不可への影響説明
+
+---
+
 ## [0.2.0] - 2026-08-14
 
 ### Added

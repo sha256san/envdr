@@ -40,16 +40,10 @@ impl Checker for PythonChecker {
             }
 
             // Check Virtual Environment
-            if std::env::var("VIRTUAL_ENV").is_ok() {
-                py_item.details.push(format!(
-                    "Active Virtual Environment: {}",
-                    std::env::var("VIRTUAL_ENV").unwrap_or_default()
-                ));
-            } else if std::env::var("CONDA_PREFIX").is_ok() {
-                py_item.details.push(format!(
-                    "Active Conda Environment: {}",
-                    std::env::var("CONDA_PREFIX").unwrap_or_default()
-                ));
+            if let Ok(venv) = std::env::var("VIRTUAL_ENV") {
+                py_item.details.push(format!("Active Virtual Environment: {}", venv));
+            } else if let Ok(conda) = std::env::var("CONDA_PREFIX") {
+                py_item.details.push(format!("Active Conda Environment: {}", conda));
             } else {
                 py_item.details.push("No virtual environment active (using system/global Python)".to_string());
             }
@@ -65,22 +59,35 @@ impl Checker for PythonChecker {
 
                 if let Some(ver) = run_cmd_first_line(&pip_str, &["--version"]) {
                     pip_item.version = Some(ver.clone());
-                    
+
                     // Verify pip points to current Python
-                    // Output format is usually: pip X.Y.Z from /path (python X.Y)
-                    if let Some(py_ver_out) = run_cmd_first_line(&path_str, &["-c", "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')"]) {
+                    if let Some(py_ver_out) = run_cmd_first_line(
+                        &path_str,
+                        &["-c", "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')"],
+                    ) {
                         let expected_tag = format!("python {}", py_ver_out);
                         if !ver.contains(&expected_tag) && !ver.contains(&format!("python{}", py_ver_out)) {
-                            pip_item.status = Status::Warning;
-                            pip_item.issues.push(Issue::new(
-                                Status::Warning,
-                                "pip binary might not be aligned with the current python interpreter",
+                            pip_item.status = Status::Error;
+                            let mut issue = Issue::new(
+                                Status::Error,
+                                "pip binary is not aligned with active Python interpreter",
+                            );
+                            issue.cause = Some(format!(
+                                "'{}' belongs to a different Python environment than '{}'",
+                                pip_str, path_str
                             ));
-                            pip_item.recommendations.push(Recommendation::full(
-                                "Run pip via python module to avoid version mismatches",
+                            issue.impact = Some(
+                                "Packages installed with 'pip install' will not be accessible to the active Python interpreter".into(),
+                            );
+                            pip_item.issues.push(issue);
+
+                            let rec = Recommendation::full(
+                                "Run pip via Python module invocation to guarantee environment alignment",
                                 format!("{} -m pip install <package>", path_str),
                                 "This guarantees installing packages into the exact Python environment being run.",
-                            ));
+                            )
+                            .with_verification(format!("{} -m pip --version", path_str));
+                            pip_item.recommendations.push(rec);
                         }
                     }
                 }
@@ -133,15 +140,20 @@ impl Checker for PythonChecker {
                 torch_item.details.push(torch_info.clone());
                 if torch_info.contains("CUDA available: False") {
                     torch_item.status = Status::Info;
-                    torch_item.issues.push(Issue::new(
+                    let mut issue = Issue::new(
                         Status::Info,
                         "PyTorch is running in CPU-only mode (CUDA is not available)",
-                    ));
-                    torch_item.recommendations.push(Recommendation::full(
+                    );
+                    issue.cause = Some("Installed PyTorch package is the CPU-only variant or NVIDIA CUDA driver is not active".into());
+                    issue.impact = Some("PyTorch tensor operations and neural network training cannot utilize GPU acceleration".into());
+                    torch_item.issues.push(issue);
+
+                    let rec = Recommendation::full(
                         "Install PyTorch with CUDA support if you have an NVIDIA GPU",
                         "pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121",
                         "Refer to pytorch.org for official build matrix.",
-                    ));
+                    );
+                    torch_item.recommendations.push(rec);
                 }
                 result.items.push(torch_item);
             }

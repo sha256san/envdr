@@ -80,16 +80,22 @@ impl Checker for ShellChecker {
                             let t = line.trim();
                             if t.starts_with("export PATH=") && !t.contains(':') && !t.contains('$') {
                                 rc_item.status = Status::Warning;
-                                rc_item.issues.push(Issue::with_detail(
+                                let mut issue = Issue::with_detail(
                                     Status::Warning,
                                     "Potential destructive PATH overwrite detected (missing existing $PATH reference)",
                                     t.to_string(),
-                                ));
-                                rc_item.recommendations.push(Recommendation::full(
+                                );
+                                issue.cause = Some("Configuration line assigns PATH without expanding existing $PATH".into());
+                                issue.impact = Some("System binaries (/usr/bin, /bin) become inaccessible, breaking basic terminal commands".into());
+                                rc_item.issues.push(issue);
+
+                                let rec = Recommendation::full(
                                     "Ensure PATH exports prepend or append to $PATH",
                                     "export PATH=\"/your/new/path:$PATH\"",
                                     "Overwriting PATH completely without :$PATH breaks standard system commands.",
-                                ));
+                                )
+                                .with_verification("echo $PATH");
+                                rc_item.recommendations.push(rec);
                             }
                         }
                     }
